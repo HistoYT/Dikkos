@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dikkos Empanadas — Algo único, algo diferente | Santa Marta</title>
+<meta name="description" content="Dikkos: las empanadas más crocantes de Santa Marta. Masa artesanal, relleno generoso y un sabor que no vas a encontrar en ningún otro lado. Pide por WhatsApp.">
+<meta property="og:title" content="Dikkos Empanadas — Algo único, algo diferente">
+<meta property="og:description" content="Las empanadas más crocantes de Santa Marta. Recién fritas, con relleno de autor. Pide ya por WhatsApp.">
+<meta property="og:image" content="assets/img/logo.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ============ SVG SPRITE (icons reused everywhere) ============ -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-empanada" viewBox="0 0 100 56">
+    <path class="empanada-body" d="M10,50 A40,40 0 0 1 90,50 L90,50
+      a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0
+      a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 a4,4 0 0 1 -8,0 Z"/>
+    <circle class="empanada-dot" cx="30" cy="32" r="1.8"/>
+    <circle class="empanada-dot" cx="42" cy="24" r="1.8"/>
+    <circle class="empanada-dot" cx="56" cy="26" r="1.8"/>
+    <circle class="empanada-dot" cx="68" cy="20" r="1.8"/>
+    <circle class="empanada-dot" cx="50" cy="33" r="1.8"/>
+  </symbol>
+  <symbol id="icon-whatsapp" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12.04 2c-5.523 0-10 4.477-10 10 0 1.77.462 3.492 1.34 5.007L2 22l5.13-1.345A9.96 9.96 0 0 0 12.04 22c5.523 0 10-4.477 10-10s-4.477-10-10-10zm0 18.2a8.17 8.17 0 0 1-4.166-1.14l-.299-.177-3.075.806.821-3l-.195-.309A8.194 8.194 0 1 1 20.23 12.2a8.19 8.19 0 0 1-8.19 8z"/>
+  </symbol>
+  <symbol id="icon-ig" viewBox="0 0 24 24">
+    <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <circle cx="17.6" cy="6.4" r="1.15" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-pin" viewBox="0 0 24 24">
+    <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.2.2.5.3.7.3s.5-.1.7-.3C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-flame" viewBox="0 0 24 24">
+    <path d="M12 2s-5 5.2-5 9.6C7 16.1 9.2 20 12 20s5-3.9 5-8.4c0-1.4-.6-2.7-1.3-3.8.1 1.4-.5 2.6-1.4 3-0.2-2.6-1.4-4.9-2.3-8.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-wheat" viewBox="0 0 24 24">
+    <path d="M12 3v18" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M12 6c-2 0-3-1.2-3-1.2S9.5 7 12 7M12 6c2 0 3-1.2 3-1.2S14.5 7 12 7M12 10c-2 0-3-1.2-3-1.2S9.5 11 12 11M12 10c2 0 3-1.2 3-1.2S14.5 11 12 11M12 14c-2 0-3-1.2-3-1.2S9.5 15 12 15M12 14c2 0 3-1.2 3-1.2S14.5 15 12 15" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-bowl" viewBox="0 0 24 24">
+    <path d="M3 11h18a9 6 0 0 1-18 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M8 11c0-2 1.5-4 4-4s4 2 4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-arrow" viewBox="0 0 24 24">
+    <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-cart" viewBox="0 0 24 24">
+    <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+    <path d="M2.5 3h2.4l1.1 3M6 6l1.8 8.2a2 2 0 0 0 2 1.6h7a2 2 0 0 0 1.95-1.55L20.5 8H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24">
+    <rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    <circle cx="12" cy="15.3" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24">
+    <path d="M4 7h16M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M6.5 7l.9 12.1A2 2 0 0 0 9.4 21h5.2a2 2 0 0 0 2-1.9L17.5 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-minus" viewBox="0 0 24 24">
+    <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-pencil" viewBox="0 0 24 24">
+    <path d="M4 20l.9-3.9L15.6 5.4a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 19.1 4 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M14 7l3 3" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+</svg>
+
+<!-- ============ PRELOADER ============ -->
+<div id="preloader" aria-hidden="true">
+  <div class="preloader-rain" id="preloaderRain"></div>
+  <div class="preloader-center">
+    <svg class="preloader-logo" viewBox="0 0 100 56"><use href="#icon-empanada"/></svg>
+    <div class="preloader-count"><span id="preloaderPct">0</span>%</div>
+    <div class="preloader-bar"><span id="preloaderFill"></span></div>
+    <p class="preloader-label">friendo algo único<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+  </div>
+</div>
+
+<!-- ============ SCROLL MASCOT (rolling empanada) ============ -->
+<div class="scroll-mascot" id="scrollMascot" aria-hidden="true">
+  <svg viewBox="0 0 100 56"><use href="#icon-empanada"/></svg>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header" id="siteHeader">
+  <div class="wrap header-inner">
+    <a href="#inicio" class="brand">
+      <img src="assets/img/logo.jpg" alt="Dikkos Empanadas" class="brand-logo">
+      <span class="brand-word">DIKKOS</span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <a href="#inicio">Inicio</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#menu">Menú</a>
+      <a href="#galeria">Galería</a>
+      <a href="#contacto">Contacto</a>
+      <a class="nav-cta" href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener">
+        <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir ahora
+      </a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn cart-btn" id="cartBtn" aria-label="Ver carrito de compras" aria-haspopup="dialog">
+        <svg><use href="#icon-cart"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="icon-btn admin-btn" id="adminBtn" aria-label="Acceso administrador" aria-haspopup="dialog">
+        <svg><use href="#icon-lock"/></svg>
+      </button>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section id="inicio" class="hero">
+    <div class="hero-pattern" aria-hidden="true"></div>
+    <div class="hero-blob blob-a" aria-hidden="true"></div>
+    <div class="hero-blob blob-b" aria-hidden="true"></div>
+
+    <svg class="floaty float-1" data-speed="0.4" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+    <svg class="floaty float-2" data-speed="0.7" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+    <svg class="floaty float-3" data-speed="0.55" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+
+    <div class="wrap hero-inner">
+      <p class="hero-eyebrow reveal">🧡 Santa Marta, Magdalena</p>
+      <h1 class="hero-title">
+        <span class="reveal-line"><span class="reveal-word">Algo</span> <span class="reveal-word">único.</span></span>
+        <span class="reveal-line accent"><span class="reveal-word">Algo</span> <span class="reveal-word">diferente.</span></span>
+      </h1>
+      <p class="hero-sub reveal">Empanadas recién fritas, crocantes por fuera y con relleno generoso por dentro. El antojo que Santa Marta pide todas las noches.</p>
+      <div class="hero-actions reveal">
+        <a href="#menu" class="btn btn-primary">Ver el menú</a>
+        <a href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener" class="btn btn-ghost">
+          <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir por WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <a href="#nosotros" class="scroll-cue" aria-label="Bajar">
+      <svg viewBox="0 0 100 56"><use href="#icon-empanada"/></svg>
+      <span>scroll</span>
+    </a>
+  </section>
+
+  <!-- ============ MARQUEE ============ -->
+  <div class="marquee">
+    <div class="marquee-track">
+      <span>ALGO ÚNICO</span><span>·</span><span>ALGO DIFERENTE</span><span>·</span><span>100% MASA ARTESANAL</span><span>·</span><span>SANTA MARTA</span><span>·</span>
+      <span>ALGO ÚNICO</span><span>·</span><span>ALGO DIFERENTE</span><span>·</span><span>100% MASA ARTESANAL</span><span>·</span><span>SANTA MARTA</span><span>·</span>
+    </div>
+  </div>
+
+  <!-- ============ NOSOTROS ============ -->
+  <section id="nosotros" class="about">
+    <div class="wrap about-grid">
+      <div class="about-media reveal">
+        <img src="assets/img/team-fryer.jpg" alt="Equipo Dikkos preparando empanadas" loading="lazy">
+        <div class="about-media-badge">
+          <svg class="ic-md"><use href="#icon-empanada"/></svg>
+          <span>Hecho al momento</span>
+        </div>
+      </div>
+      <div class="about-copy">
+        <p class="eyebrow reveal">Nuestra historia</p>
+        <h2 class="reveal">La empanada que rompe la rutina</h2>
+        <p class="reveal">Dikkos nació en Santa Marta con una idea sencilla: que cada empanada se sienta distinta. Masa que truena al primer mordisco, relleno que no se queda corto, y ese toque de casa que no vas a encontrar en ningún otro lado.</p>
+        <p class="reveal">Somos el plan del after playa, el antojo de las 8pm y la excusa perfecta para juntarte con los tuyos.</p>
+
+        <div class="stat-row">
+          <div class="stat reveal">
+            <span class="stat-num" data-count="8">0</span><span class="stat-suffix">+</span>
+            <span class="stat-label">sabores en el menú</span>
+          </div>
+          <div class="stat reveal">
+            <span class="stat-num" data-count="6">0</span>
+            <span class="stat-label">días abiertos por semana</span>
+          </div>
+          <div class="stat reveal">
+            <span class="stat-num" data-count="100">0</span><span class="stat-suffix">%</span>
+            <span class="stat-label">receta propia</span>
+          </div>
+        </div>
+        <!-- Cifras de ejemplo — reemplázalas por tus números reales en assets/js/main.js (STATS) -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESO (pinned horizontal) ============ -->
+  <section class="process" id="proceso">
+    <div class="process-head wrap">
+      <p class="eyebrow reveal">Del fogón a tus manos</p>
+      <h2 class="reveal">Así nacen nuestras empanadas</h2>
+    </div>
+    <div class="process-pin">
+      <div class="process-track" id="processTrack">
+        <article class="process-step">
+          <svg class="ic-lg"><use href="#icon-wheat"/></svg>
+          <span class="step-no">01</span>
+          <h3>Masa artesanal</h3>
+          <p>Amasada fresca cada día, sin atajos, hasta lograr el punto exacto de crocancia.</p>
+        </article>
+        <article class="process-step">
+          <svg class="ic-lg"><use href="#icon-bowl"/></svg>
+          <span class="step-no">02</span>
+          <h3>Relleno generoso</h3>
+          <p>Carne, pollo o algo especial de la casa — siempre con porciones que se sienten.</p>
+        </article>
+        <article class="process-step">
+          <svg class="ic-lg"><use href="#icon-flame"/></svg>
+          <span class="step-no">03</span>
+          <h3>Fritura al punto</h3>
+          <p>Doradas justo antes de servir, para que lleguen a tu mesa crujiendo.</p>
+        </article>
+        <article class="process-step">
+          <svg class="ic-lg"><use href="#icon-check"/></svg>
+          <span class="step-no">04</span>
+          <h3>¡Lista para ti!</h3>
+          <p>Empacada calientita, lista para el antojo. Algo único, algo diferente.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATÁLOGO (sección obligatoria) ============ -->
+  <section id="menu" class="catalog">
+    <div class="scallop-top" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="eyebrow reveal center">Catálogo</p>
+      <h2 class="reveal center">Nuestro menú</h2>
+      <p class="reveal center section-sub">Elige, antójate y pide por WhatsApp en un solo clic.</p>
+
+      <div class="catalog-filters reveal" id="catalogFilters">
+        <button class="filter-btn is-active" data-filter="todas">Todas</button>
+        <button class="filter-btn" data-filter="tradicionales">Tradicionales</button>
+        <button class="filter-btn" data-filter="especiales">Especiales</button>
+        <button class="filter-btn" data-filter="combos">Combos</button>
+        <button class="filter-btn" data-filter="bebidas">Bebidas</button>
+      </div>
+
+      <div class="catalog-grid" id="catalogGrid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ GALERÍA ============ -->
+  <section id="galeria" class="gallery">
+    <div class="wrap">
+      <p class="eyebrow reveal center">Instagram</p>
+      <h2 class="reveal center">Momentos Dikkos</h2>
+      <p class="reveal center section-sub">Así vivimos las empanadas en Santa Marta — síguenos en <a href="https://www.instagram.com/dikkos_sm/" target="_blank" rel="noopener">@dikkos_sm</a></p>
+    </div>
+    <div class="gallery-grid" id="galleryGrid">
+      <figure class="g-item reveal" data-full="assets/img/gallery/g1-tray.jpg"><img src="assets/img/gallery/g1-tray.jpg" alt="Empanadas Dikkos recién servidas" loading="lazy"></figure>
+      <figure class="g-item reveal" data-full="assets/img/gallery/g5-cleat.jpg"><img src="assets/img/gallery/g5-cleat.jpg" alt="Contenido Dikkos - fútbol y empanadas" loading="lazy"></figure>
+      <figure class="g-item reveal" data-full="assets/img/gallery/g3-display.jpg"><img src="assets/img/gallery/g3-display.jpg" alt="Vitrina de empanadas Dikkos" loading="lazy"></figure>
+      <figure class="g-item reveal" data-full="assets/img/gallery/g4-binoculars.jpg"><img src="assets/img/gallery/g4-binoculars.jpg" alt="Dikkos y el Mundial 2026" loading="lazy"></figure>
+      <figure class="g-item reveal" data-full="assets/img/gallery/g2-team.jpg"><img src="assets/img/gallery/g2-team.jpg" alt="Equipo Dikkos" loading="lazy"></figure>
+      <figure class="g-item reveal" data-full="assets/img/gallery/g6-colombia.jpg"><img src="assets/img/gallery/g6-colombia.jpg" alt="Contenido Dikkos Mundial 2026" loading="lazy"></figure>
+      <a class="g-item g-more reveal" href="https://www.instagram.com/dikkos_sm/" target="_blank" rel="noopener">
+        <svg class="ic-lg"><use href="#icon-ig"/></svg>
+        <span>Ver más en Instagram</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CTA BANNER ============ -->
+  <section class="cta-banner">
+    <svg class="cta-float f1" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+    <svg class="cta-float f2" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+    <svg class="cta-float f3" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
+    <div class="wrap">
+      <h2 class="reveal center">¿Ya se te antojó?</h2>
+      <p class="reveal center">Escríbenos y te la dejamos calientita en minutos.</p>
+      <a href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener" class="btn btn-dark pulse reveal">
+        <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir ya por WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CONTACTO ============ -->
+  <section id="contacto" class="contact">
+    <div class="wrap contact-grid">
+      <div class="contact-info">
+        <p class="eyebrow reveal">Visítanos</p>
+        <h2 class="reveal">Te esperamos</h2>
+        <ul class="contact-list">
+          <li class="reveal"><svg class="ic-md"><use href="#icon-pin"/></svg><div><strong>Ubicación</strong><span>Santa Marta, Magdalena, Colombia</span></div></li>
+          <li class="reveal"><svg class="ic-md"><use href="#icon-clock"/></svg><div><strong>Horario</strong><span>Sábado a jueves · 6:00 pm – 10:00 pm<br>Viernes: cerrado</span></div></li>
+          <li class="reveal"><svg class="ic-md"><use href="#icon-whatsapp"/></svg><div><strong>WhatsApp</strong><span><a href="https://wa.me/573015729100" target="_blank" rel="noopener">+57 301 572 9100</a></span></div></li>
+          <li class="reveal"><svg class="ic-md"><use href="#icon-ig"/></svg><div><strong>Instagram</strong><span><a href="https://www.instagram.com/dikkos_sm/" target="_blank" rel="noopener">@dikkos_sm</a></span></div></li>
+        </ul>
+        <a href="https://www.google.com/maps/search/?api=1&query=Dikkos%20Empanadas%20Santa%20Marta" target="_blank" rel="noopener" class="btn btn-primary">Cómo llegar</a>
+      </div>
+      <div class="contact-map reveal">
+        <iframe title="Mapa Santa Marta" src="https://www.google.com/maps?q=Santa+Marta,+Magdalena,+Colombia&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <a href="#inicio" class="brand">
+      <img src="assets/img/logo.jpg" alt="Dikkos Empanadas" class="brand-logo">
+      <span class="brand-word">DIKKOS</span>
+    </a>
+    <nav class="footer-nav">
+      <a href="#inicio">Inicio</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#menu">Menú</a>
+      <a href="#galeria">Galería</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="footer-social">
+      <a href="https://www.instagram.com/dikkos_sm/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="ic-md"><use href="#icon-ig"/></svg></a>
+      <a href="https://wa.me/573015729100" target="_blank" rel="noopener" aria-label="WhatsApp"><svg class="ic-md"><use href="#icon-whatsapp"/></svg></a>
+    </div>
+  </div>
+  <p class="footer-bottom">© <span id="year"></span> Dikkos Empanadas · Santa Marta, Colombia · Algo único, algo diferente 🧡</p>
+</footer>
+
+<a href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener" class="whatsapp-float" id="whatsappFloat" aria-label="Pedir por WhatsApp">
+  <svg class="ic-md"><use href="#icon-whatsapp"/></svg>
+</a>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- ============ OVERLAY (compartido por carrito y modales) ============ -->
+<div class="ui-overlay" id="uiOverlay"></div>
+
+<!-- ============ CARRITO DE COMPRAS ============ -->
+<aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true">
+  <div class="cart-head">
+    <h3 id="cartTitle"><svg class="ic-sm"><use href="#icon-cart"/></svg> Tu carrito</h3>
+    <button class="drawer-close" id="cartClose" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-empty" id="cartEmpty">
+    <svg class="ic-lg"><use href="#icon-cart"/></svg>
+    <p>Tu carrito está vacío</p>
+    <a href="#menu" class="btn btn-primary" id="cartEmptyCta">Ver el menú</a>
+  </div>
+  <div class="cart-foot" id="cartFoot">
+    <div class="cart-total"><span>Total</span><strong id="cartTotal">$0</strong></div>
+
+    <div class="field">
+      <label for="custName">Nombre</label>
+      <input type="text" id="custName" autocomplete="name" placeholder="Tu nombre">
+    </div>
+    <div class="field">
+      <label for="custPhone">Teléfono</label>
+      <input type="tel" id="custPhone" autocomplete="tel" placeholder="300 123 4567">
+    </div>
+    <div class="field">
+      <label for="custAddress">Dirección o punto de entrega (opcional)</label>
+      <input type="text" id="custAddress" autocomplete="street-address" placeholder="Ej. Cra 5 #10-20, o punto de encuentro">
+    </div>
+
+    <div class="field">
+      <label>Método de pago</label>
+      <div class="pay-method" id="payMethod">
+        <button type="button" class="pay-option is-active" data-method="contra_entrega">Contra entrega</button>
+        <button type="button" class="pay-option" data-method="online">Pagar en línea</button>
+      </div>
+    </div>
+
+    <p class="cart-order-error" id="cartOrderError" hidden>Escribe tu nombre y teléfono para continuar.</p>
+
+    <button type="button" class="btn btn-primary btn-block" id="cartCheckout">
+      <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Confirmar pedido
+    </button>
+    <button class="cart-clear" id="cartClear" type="button">Vaciar carrito</button>
+  </div>
+</aside>
+
+<!-- ============ LOGIN ADMINISTRADOR ============ -->
+<div class="ui-modal" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
+  <button class="modal-close" id="adminLoginClose" aria-label="Cerrar">&times;</button>
+  <div class="admin-login-body">
+    <svg class="ic-lg"><use href="#icon-lock"/></svg>
+    <h3 id="adminLoginTitle">Acceso administrador</h3>
+    <p class="admin-login-sub">Solo para el equipo Dikkos. Gestiona el menú y los pedidos desde aquí.</p>
+
+    <p class="setup-notice" id="firebaseSetupNotice" hidden>
+      Falta conectar Firebase para activar el acceso. Revisa las instrucciones en <code>assets/js/firebase-config.js</code> y pega ahí la configuración de tu proyecto.
+    </p>
+
+    <form id="adminLoginForm" novalidate>
+      <p class="admin-error" id="adminError" hidden>Correo o contraseña incorrectos.</p>
+      <div class="field">
+        <label for="adminUser">Correo</label>
+        <input type="email" id="adminUser" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="adminPass">Contraseña</label>
+        <input type="password" id="adminPass" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ PANEL ADMINISTRADOR ============ -->
+<div class="ui-modal ui-modal-lg" id="adminPanelModal" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle" aria-hidden="true">
+  <button class="modal-close" id="adminPanelClose" aria-label="Cerrar">&times;</button>
+  <div class="admin-panel-head">
+    <h3 id="adminPanelTitle"><svg class="ic-sm"><use href="#icon-lock"/></svg> Panel administrador</h3>
+    <div class="admin-panel-actions admin-tab-panel" data-tab="productos" id="adminProductActions" hidden>
+      <button class="btn btn-primary btn-sm" id="adminAddProduct" type="button">+ Nuevo producto</button>
+      <button class="btn btn-outline btn-sm" id="adminRestore" type="button">Restaurar catálogo</button>
+    </div>
+    <button class="btn btn-dark btn-sm" id="adminLogout" type="button">Cerrar sesión</button>
+  </div>
+
+  <div class="admin-tabs" id="adminTabs">
+    <button type="button" class="admin-tab is-active" data-tab="pedidos">Pedidos<span class="admin-tab-badge" id="ordersNewBadge" hidden>0</span></button>
+    <button type="button" class="admin-tab" data-tab="productos">Productos</button>
+  </div>
+
+  <p class="admin-note admin-tab-panel" data-tab="pedidos" id="ordersFirebaseNotice" hidden>
+    Los pedidos necesitan Firebase conectado. Revisa <code>assets/js/firebase-config.js</code> para activar esta sección.
+  </p>
+  <div class="admin-orders-list admin-tab-panel" data-tab="pedidos" id="adminOrdersList"></div>
+
+  <p class="admin-note admin-tab-panel" data-tab="productos" hidden>Los productos se guardan solo en este navegador (no dependen de Firebase), así que edítalos desde el mismo equipo/navegador que usas para publicar la página.</p>
+  <div class="admin-product-list admin-tab-panel" data-tab="productos" id="adminProductList" hidden></div>
+</div>
+
+<!-- ============ EDITOR DE PRODUCTO ============ -->
+<div class="ui-modal ui-modal-lg" id="productEditorModal" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" aria-hidden="true">
+  <button class="modal-close" id="productEditorClose" aria-label="Cerrar">&times;</button>
+  <div class="editor-body">
+    <h3 id="productEditorTitle">Nuevo producto</h3>
+    <form id="productEditorForm" novalidate>
+      <input type="hidden" id="prodId">
+      <div class="field-row">
+        <div class="field">
+          <label for="prodName">Nombre</label>
+          <input type="text" id="prodName" required>
+        </div>
+        <div class="field">
+          <label for="prodCat">Categoría</label>
+          <select id="prodCat" required>
+            <option value="tradicionales">Tradicionales</option>
+            <option value="especiales">Especiales</option>
+            <option value="combos">Combos</option>
+            <option value="bebidas">Bebidas</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="prodDesc">Descripción</label>
+        <input type="text" id="prodDesc" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="prodPrice">Precio (COP)</label>
+          <input type="number" id="prodPrice" min="0" step="100" required>
+        </div>
+        <div class="field">
+          <label for="prodEmoji">Emoji (si no hay foto)</label>
+          <input type="text" id="prodEmoji" maxlength="4" placeholder="🥤">
+        </div>
+      </div>
+      <div class="field">
+        <label for="prodImg">Ruta de la foto (opcional)</label>
+        <input type="text" id="prodImg" placeholder="assets/img/catalog/foto.jpg">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="prodBadge">Etiqueta (opcional)</label>
+          <input type="text" id="prodBadge" placeholder="Popular">
+        </div>
+        <div class="field">
+          <label for="prodBadgeType">Color etiqueta</label>
+          <select id="prodBadgeType">
+            <option value="gold">Dorada</option>
+            <option value="red">Roja</option>
+          </select>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+        <button type="button" class="btn btn-outline" id="productEditorCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/vendor/gsap.min.js"></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/js/vendor/lenis.min.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
