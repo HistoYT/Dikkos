@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Dikkos Empanadas — Algo único, algo diferente | Santa Marta</title>
-<meta name="description" content="Dikkos: las empanadas más crocantes de Santa Marta. Masa artesanal, relleno generoso y un sabor que no vas a encontrar en ningún otro lado. Pide por WhatsApp.">
+<meta name="description" content="Dikkos: las empanadas más crocantes de Santa Marta. Masa artesanal, relleno generoso y un sabor que no vas a encontrar en ningún otro lado. Pide en línea.">
 <meta property="og:title" content="Dikkos Empanadas — Algo único, algo diferente">
-<meta property="og:description" content="Las empanadas más crocantes de Santa Marta. Recién fritas, con relleno de autor. Pide ya por WhatsApp.">
+<meta property="og:description" content="Las empanadas más crocantes de Santa Marta. Recién fritas, con relleno de autor. Pide ya en línea.">
 <meta property="og:image" content="assets/img/logo.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/img/logo.jpg">
@@ -88,6 +88,9 @@
     <path d="M4 20l.9-3.9L15.6 5.4a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 19.1 4 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
     <path d="M14 7l3 3" stroke="currentColor" stroke-width="1.6"/>
   </symbol>
+  <symbol id="icon-chat" viewBox="0 0 24 24">
+    <path d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H9l-4.4 3.3a.6.6 0 0 1-.96-.48V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
 </svg>
 
 <!-- ============ PRELOADER ============ -->
@@ -119,8 +122,8 @@
       <a href="#menu">Menú</a>
       <a href="#galeria">Galería</a>
       <a href="#contacto">Contacto</a>
-      <a class="nav-cta" href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener">
-        <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir ahora
+      <a class="nav-cta" href="#menu">
+        <svg class="ic-sm"><use href="#icon-cart"/></svg> Pedir ahora
       </a>
     </nav>
     <div class="header-actions">
@@ -128,9 +131,9 @@
         <svg><use href="#icon-cart"/></svg>
         <span class="cart-count" id="cartCount">0</span>
       </button>
-      <button class="icon-btn admin-btn" id="adminBtn" aria-label="Acceso administrador" aria-haspopup="dialog">
+      <a class="icon-btn admin-btn" href="admin.html" aria-label="Panel administrador">
         <svg><use href="#icon-lock"/></svg>
-      </button>
+      </a>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -159,9 +162,9 @@
       <p class="hero-sub reveal">Empanadas recién fritas, crocantes por fuera y con relleno generoso por dentro. El antojo que Santa Marta pide todas las noches.</p>
       <div class="hero-actions reveal">
         <a href="#menu" class="btn btn-primary">Ver el menú</a>
-        <a href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener" class="btn btn-ghost">
-          <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir por WhatsApp
-        </a>
+        <button type="button" id="heroCartBtn" class="btn btn-ghost">
+          <svg class="ic-sm"><use href="#icon-cart"/></svg> Ver mi carrito
+        </button>
       </div>
     </div>
 
@@ -256,7 +259,7 @@
     <div class="wrap">
       <p class="eyebrow reveal center">Catálogo</p>
       <h2 class="reveal center">Nuestro menú</h2>
-      <p class="reveal center section-sub">Elige, antójate y pide por WhatsApp en un solo clic.</p>
+      <p class="reveal center section-sub">Elige, antójate y arma tu pedido en un solo clic.</p>
 
       <div class="catalog-filters reveal" id="catalogFilters">
         <button class="filter-btn is-active" data-filter="todas">Todas</button>
@@ -298,9 +301,9 @@
     <svg class="cta-float f3" viewBox="0 0 100 56" aria-hidden="true"><use href="#icon-empanada"/></svg>
     <div class="wrap">
       <h2 class="reveal center">¿Ya se te antojó?</h2>
-      <p class="reveal center">Escríbenos y te la dejamos calientita en minutos.</p>
-      <a href="https://wa.me/573015729100?text=Hola%20Dikkos!%20Quiero%20hacer%20un%20pedido%20%F0%9F%A7%A1" target="_blank" rel="noopener" class="btn btn-dark pulse reveal">
-        <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Pedir ya por WhatsApp
+      <p class="reveal center">Haz tu pedido en línea y te la dejamos calientita en minutos.</p>
+      <a href="#menu" class="btn btn-dark pulse reveal">
+        <svg class="ic-sm"><use href="#icon-cart"/></svg> Hacer mi pedido
       </a>
     </div>
   </section>
@@ -375,156 +378,70 @@
     <a href="#menu" class="btn btn-primary" id="cartEmptyCta">Ver el menú</a>
   </div>
   <div class="cart-foot" id="cartFoot">
-    <div class="cart-total"><span>Total</span><strong id="cartTotal">$0</strong></div>
+    <div class="cart-checkout-form" id="cartCheckoutForm">
+      <div class="cart-total"><span>Total</span><strong id="cartTotal">$0</strong></div>
 
-    <div class="field">
-      <label for="custName">Nombre</label>
-      <input type="text" id="custName" autocomplete="name" placeholder="Tu nombre">
-    </div>
-    <div class="field">
-      <label for="custPhone">Teléfono</label>
-      <input type="tel" id="custPhone" autocomplete="tel" placeholder="300 123 4567">
-    </div>
-    <div class="field">
-      <label for="custAddress">Dirección o punto de entrega (opcional)</label>
-      <input type="text" id="custAddress" autocomplete="street-address" placeholder="Ej. Cra 5 #10-20, o punto de encuentro">
-    </div>
-
-    <div class="field">
-      <label>Método de pago</label>
-      <div class="pay-method" id="payMethod">
-        <button type="button" class="pay-option is-active" data-method="contra_entrega">Contra entrega</button>
-        <button type="button" class="pay-option" data-method="online">Pagar en línea</button>
+      <div class="field">
+        <label for="custName">Nombre</label>
+        <input type="text" id="custName" autocomplete="name" placeholder="Tu nombre">
       </div>
+      <div class="field">
+        <label for="custPhone">Teléfono</label>
+        <input type="tel" id="custPhone" autocomplete="tel" placeholder="300 123 4567">
+      </div>
+      <div class="field">
+        <label for="custAddress">Dirección o punto de entrega (opcional)</label>
+        <input type="text" id="custAddress" autocomplete="street-address" placeholder="Ej. Cra 5 #10-20, o punto de encuentro">
+      </div>
+
+      <div class="field">
+        <label>Método de pago</label>
+        <div class="pay-method" id="payMethod">
+          <button type="button" class="pay-option is-active" data-method="contra_entrega">Contra entrega</button>
+          <button type="button" class="pay-option" data-method="online">Pagar en línea</button>
+        </div>
+      </div>
+
+      <p class="cart-order-error" id="cartOrderError" hidden></p>
+
+      <button type="button" class="btn btn-primary btn-block" id="cartCheckout">
+        <svg class="ic-sm"><use href="#icon-check"/></svg> Confirmar pedido
+      </button>
+      <button class="cart-clear" id="cartClear" type="button">Vaciar carrito</button>
     </div>
 
-    <p class="cart-order-error" id="cartOrderError" hidden>Escribe tu nombre y teléfono para continuar.</p>
-
-    <button type="button" class="btn btn-primary btn-block" id="cartCheckout">
-      <svg class="ic-sm"><use href="#icon-whatsapp"/></svg> Confirmar pedido
-    </button>
-    <button class="cart-clear" id="cartClear" type="button">Vaciar carrito</button>
+    <div class="cart-success" id="cartSuccess" hidden>
+      <svg class="ic-lg"><use href="#icon-check"/></svg>
+      <h4>¡Pedido recibido!</h4>
+      <p id="cartSuccessMsg"></p>
+      <button type="button" class="btn btn-primary btn-block" id="cartSuccessClose">Cerrar</button>
+    </div>
   </div>
 </aside>
 
-<!-- ============ LOGIN ADMINISTRADOR ============ -->
-<div class="ui-modal" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" aria-hidden="true">
-  <button class="modal-close" id="adminLoginClose" aria-label="Cerrar">&times;</button>
-  <div class="admin-login-body">
-    <svg class="ic-lg"><use href="#icon-lock"/></svg>
-    <h3 id="adminLoginTitle">Acceso administrador</h3>
-    <p class="admin-login-sub">Solo para el equipo Dikkos. Gestiona el menú y los pedidos desde aquí.</p>
+<!-- ============ CHAT EN VIVO (por pedido) ============ -->
+<button class="chat-float" id="chatFloat" aria-label="Abrir chat con Dikkos" hidden>
+  <svg><use href="#icon-chat"/></svg>
+  <span class="chat-badge" id="chatBadge" hidden>0</span>
+</button>
 
-    <p class="setup-notice" id="firebaseSetupNotice" hidden>
-      Falta conectar Firebase para activar el acceso. Revisa las instrucciones en <code>assets/js/firebase-config.js</code> y pega ahí la configuración de tu proyecto.
-    </p>
-
-    <form id="adminLoginForm" novalidate>
-      <p class="admin-error" id="adminError" hidden>Correo o contraseña incorrectos.</p>
-      <div class="field">
-        <label for="adminUser">Correo</label>
-        <input type="email" id="adminUser" autocomplete="username" required>
-      </div>
-      <div class="field">
-        <label for="adminPass">Contraseña</label>
-        <input type="password" id="adminPass" autocomplete="current-password" required>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
-    </form>
+<aside class="chat-panel" id="chatPanel" role="dialog" aria-modal="true" aria-labelledby="chatTitle" aria-hidden="true">
+  <div class="cart-head">
+    <h3 id="chatTitle"><svg class="ic-sm"><use href="#icon-chat"/></svg> Chat con Dikkos</h3>
+    <button class="drawer-close" id="chatClose" aria-label="Cerrar chat">&times;</button>
   </div>
-</div>
-
-<!-- ============ PANEL ADMINISTRADOR ============ -->
-<div class="ui-modal ui-modal-lg" id="adminPanelModal" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle" aria-hidden="true">
-  <button class="modal-close" id="adminPanelClose" aria-label="Cerrar">&times;</button>
-  <div class="admin-panel-head">
-    <h3 id="adminPanelTitle"><svg class="ic-sm"><use href="#icon-lock"/></svg> Panel administrador</h3>
-    <div class="admin-panel-actions admin-tab-panel" data-tab="productos" id="adminProductActions" hidden>
-      <button class="btn btn-primary btn-sm" id="adminAddProduct" type="button">+ Nuevo producto</button>
-      <button class="btn btn-outline btn-sm" id="adminRestore" type="button">Restaurar catálogo</button>
-    </div>
-    <button class="btn btn-dark btn-sm" id="adminLogout" type="button">Cerrar sesión</button>
-  </div>
-
-  <div class="admin-tabs" id="adminTabs">
-    <button type="button" class="admin-tab is-active" data-tab="pedidos">Pedidos<span class="admin-tab-badge" id="ordersNewBadge" hidden>0</span></button>
-    <button type="button" class="admin-tab" data-tab="productos">Productos</button>
-  </div>
-
-  <p class="admin-note admin-tab-panel" data-tab="pedidos" id="ordersFirebaseNotice" hidden>
-    Los pedidos necesitan Firebase conectado. Revisa <code>assets/js/firebase-config.js</code> para activar esta sección.
-  </p>
-  <div class="admin-orders-list admin-tab-panel" data-tab="pedidos" id="adminOrdersList"></div>
-
-  <p class="admin-note admin-tab-panel" data-tab="productos" hidden>Los productos se guardan solo en este navegador (no dependen de Firebase), así que edítalos desde el mismo equipo/navegador que usas para publicar la página.</p>
-  <div class="admin-product-list admin-tab-panel" data-tab="productos" id="adminProductList" hidden></div>
-</div>
-
-<!-- ============ EDITOR DE PRODUCTO ============ -->
-<div class="ui-modal ui-modal-lg" id="productEditorModal" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" aria-hidden="true">
-  <button class="modal-close" id="productEditorClose" aria-label="Cerrar">&times;</button>
-  <div class="editor-body">
-    <h3 id="productEditorTitle">Nuevo producto</h3>
-    <form id="productEditorForm" novalidate>
-      <input type="hidden" id="prodId">
-      <div class="field-row">
-        <div class="field">
-          <label for="prodName">Nombre</label>
-          <input type="text" id="prodName" required>
-        </div>
-        <div class="field">
-          <label for="prodCat">Categoría</label>
-          <select id="prodCat" required>
-            <option value="tradicionales">Tradicionales</option>
-            <option value="especiales">Especiales</option>
-            <option value="combos">Combos</option>
-            <option value="bebidas">Bebidas</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label for="prodDesc">Descripción</label>
-        <input type="text" id="prodDesc" required>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="prodPrice">Precio (COP)</label>
-          <input type="number" id="prodPrice" min="0" step="100" required>
-        </div>
-        <div class="field">
-          <label for="prodEmoji">Emoji (si no hay foto)</label>
-          <input type="text" id="prodEmoji" maxlength="4" placeholder="🥤">
-        </div>
-      </div>
-      <div class="field">
-        <label for="prodImg">Ruta de la foto (opcional)</label>
-        <input type="text" id="prodImg" placeholder="assets/img/catalog/foto.jpg">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="prodBadge">Etiqueta (opcional)</label>
-          <input type="text" id="prodBadge" placeholder="Popular">
-        </div>
-        <div class="field">
-          <label for="prodBadgeType">Color etiqueta</label>
-          <select id="prodBadgeType">
-            <option value="gold">Dorada</option>
-            <option value="red">Roja</option>
-          </select>
-        </div>
-      </div>
-      <div class="editor-actions">
-        <button type="submit" class="btn btn-primary">Guardar producto</button>
-        <button type="button" class="btn btn-outline" id="productEditorCancel">Cancelar</button>
-      </div>
-    </form>
-  </div>
-</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Escribe un mensaje..." autocomplete="off">
+    <button type="submit" class="chat-send" aria-label="Enviar mensaje"><svg><use href="#icon-arrow"/></svg></button>
+  </form>
+</aside>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/shared.js"></script>
 <script src="assets/js/vendor/gsap.min.js"></script>
 <script src="assets/js/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/js/vendor/lenis.min.js"></script>

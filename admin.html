@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Panel administrador — Dikkos Empanadas</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+<!-- ============ SVG SPRITE ============ -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-cart" viewBox="0 0 24 24">
+    <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+    <path d="M2.5 3h2.4l1.1 3M6 6l1.8 8.2a2 2 0 0 0 2 1.6h7a2 2 0 0 0 1.95-1.55L20.5 8H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24">
+    <rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    <circle cx="12" cy="15.3" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24">
+    <path d="M4 7h16M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M6.5 7l.9 12.1A2 2 0 0 0 9.4 21h5.2a2 2 0 0 0 2-1.9L17.5 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-pencil" viewBox="0 0 24 24">
+    <path d="M4 20l.9-3.9L15.6 5.4a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 19.1 4 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M14 7l3 3" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="icon-chat" viewBox="0 0 24 24">
+    <path d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H9l-4.4 3.3a.6.6 0 0 1-.96-.48V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-arrow" viewBox="0 0 24 24">
+    <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-receipt" viewBox="0 0 24 24">
+    <path d="M6 2.5h12v19l-2.2-1.4-2 1.4-1.8-1.4-1.8 1.4-2-1.4L6 21.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<!-- ============ VISTA DE LOGIN ============ -->
+<div class="admin-auth" id="adminAuthView">
+  <div class="admin-auth-card">
+    <img src="assets/img/logo.jpg" alt="Dikkos Empanadas" class="admin-auth-logo">
+    <h1>Panel administrador</h1>
+    <p class="admin-login-sub">Inicia sesión con tu cuenta del equipo Dikkos.</p>
+
+    <p class="setup-notice" id="firebaseSetupNotice" hidden>
+      Falta conectar Firebase para activar el acceso. Revisa las instrucciones en <code>assets/js/firebase-config.js</code>.
+    </p>
+
+    <form id="adminLoginForm" novalidate>
+      <p class="admin-error" id="adminError" hidden>Correo o contraseña incorrectos.</p>
+      <div class="field">
+        <label for="adminUser">Correo</label>
+        <input type="email" id="adminUser" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="adminPass">Contraseña</label>
+        <input type="password" id="adminPass" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="admin-shell" id="adminShell" hidden>
+  <aside class="admin-sidebar" id="adminSidebar">
+    <a href="index.html" class="admin-brand">
+      <img src="assets/img/logo.jpg" alt="Dikkos">
+      <span>DIKKOS</span>
+    </a>
+    <nav class="admin-nav" id="adminNav">
+      <button type="button" class="is-active" data-section="pedidos">Pedidos<span class="admin-tab-badge" id="ordersNewBadge" hidden>0</span></button>
+      <button type="button" data-section="productos">Productos</button>
+      <button type="button" data-section="finanzas">Finanzas</button>
+      <button type="button" data-section="chats">Chats<span class="admin-tab-badge" id="chatsNewBadge" hidden>0</span></button>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span class="admin-agent-email" id="agentEmail"></span>
+      <button type="button" class="btn btn-outline btn-sm btn-block" id="adminLogout">Cerrar sesión</button>
+      <a href="index.html" class="admin-back-link">← Volver al sitio</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button type="button" class="admin-burger" id="adminBurger" aria-label="Menú"><span></span><span></span><span></span></button>
+      <h2 id="adminSectionTitle">Pedidos</h2>
+    </header>
+
+    <!-- ---------- PEDIDOS ---------- -->
+    <section class="admin-section is-active" data-section="pedidos" id="sectionPedidos">
+      <div class="admin-section-head"><h2><svg class="ic-md" style="stroke:var(--amber-700)"><use href="#icon-receipt"/></svg> Pedidos</h2></div>
+      <p class="admin-note" id="ordersFirebaseNotice" hidden>
+        Los pedidos necesitan Firebase conectado. Revisa <code>assets/js/firebase-config.js</code>.
+      </p>
+      <div class="admin-orders-list" id="adminOrdersList"></div>
+    </section>
+
+    <!-- ---------- PRODUCTOS ---------- -->
+    <section class="admin-section" data-section="productos" id="sectionProductos">
+      <div class="admin-section-head"><h2>Productos</h2></div>
+      <div class="admin-panel-actions">
+        <button class="btn btn-primary btn-sm" id="adminAddProduct" type="button">+ Nuevo producto</button>
+        <button class="btn btn-outline btn-sm" id="adminRestore" type="button">Restaurar catálogo</button>
+      </div>
+      <p class="admin-note">Los productos se guardan solo en este navegador (no dependen de Firebase), así que edítalos desde el mismo equipo/navegador que usas para publicar la página.</p>
+      <div class="admin-product-list" id="adminProductList"></div>
+    </section>
+
+    <!-- ---------- FINANZAS ---------- -->
+    <section class="admin-section" data-section="finanzas" id="sectionFinanzas">
+      <div class="admin-section-head"><h2>Finanzas</h2></div>
+      <div class="stat-tiles" id="statTiles">
+        <div class="stat-tile is-accent"><div class="stat-tile-label">Ingresos totales</div><div class="stat-tile-value" id="statRevenue">$0</div></div>
+        <div class="stat-tile"><div class="stat-tile-label">Pedidos</div><div class="stat-tile-value" id="statCount">0</div></div>
+        <div class="stat-tile"><div class="stat-tile-label">Ticket promedio</div><div class="stat-tile-value" id="statAvg">$0</div></div>
+        <div class="stat-tile"><div class="stat-tile-label">Pedidos nuevos hoy</div><div class="stat-tile-value" id="statToday">0</div></div>
+      </div>
+      <div class="finance-chart-card">
+        <h3>Ingresos — últimos 14 días</h3>
+        <div class="chart-wrap" id="revenueChartWrap"></div>
+      </div>
+      <div class="transactions-table-wrap">
+        <table class="transactions-table">
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Items</th><th>Total</th><th>Pago</th><th>Estado</th></tr></thead>
+          <tbody id="transactionsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CHATS ---------- -->
+    <section class="admin-section" data-section="chats" id="sectionChats">
+      <div class="admin-section-head"><h2>Chats</h2></div>
+      <div class="chats-layout">
+        <div class="chats-list" id="chatsList"></div>
+        <div class="chats-conversation">
+          <div class="chats-conversation-empty" id="chatsEmptyState">Selecciona una conversación de la izquierda.</div>
+          <div class="chats-conversation-active" id="chatsActiveState" hidden>
+            <div class="chats-conversation-head"><h3 id="chatCustomerName"></h3></div>
+            <div class="chat-messages" id="adminChatMessages"></div>
+            <form class="chat-input-row" id="adminChatForm">
+              <input type="text" id="adminChatInput" placeholder="Escribe una respuesta..." autocomplete="off">
+              <button type="submit" class="chat-send" aria-label="Enviar"><svg><use href="#icon-arrow"/></svg></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ EDITOR DE PRODUCTO ============ -->
+<div class="ui-overlay" id="uiOverlay"></div>
+<div class="ui-modal" id="productEditorModal" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" aria-hidden="true">
+  <button class="modal-close" id="productEditorClose" aria-label="Cerrar">&times;</button>
+  <div class="editor-body">
+    <h3 id="productEditorTitle">Nuevo producto</h3>
+    <form id="productEditorForm" novalidate>
+      <input type="hidden" id="prodId">
+      <div class="field-row">
+        <div class="field">
+          <label for="prodName">Nombre</label>
+          <input type="text" id="prodName" required>
+        </div>
+        <div class="field">
+          <label for="prodCat">Categoría</label>
+          <select id="prodCat" required>
+            <option value="tradicionales">Tradicionales</option>
+            <option value="especiales">Especiales</option>
+            <option value="combos">Combos</option>
+            <option value="bebidas">Bebidas</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="prodDesc">Descripción</label>
+        <input type="text" id="prodDesc" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="prodPrice">Precio (COP)</label>
+          <input type="number" id="prodPrice" min="0" step="100" required>
+        </div>
+        <div class="field">
+          <label for="prodEmoji">Emoji (si no hay foto)</label>
+          <input type="text" id="prodEmoji" maxlength="4" placeholder="🥤">
+        </div>
+      </div>
+      <div class="field">
+        <label>Foto del producto</label>
+        <div class="img-upload">
+          <div class="img-upload-preview" id="prodImgPreview">🧡</div>
+          <div class="img-upload-controls">
+            <input type="file" id="prodImgFile" accept="image/*">
+            <div class="img-upload-progress" id="prodImgProgress"><span></span></div>
+            <p class="img-upload-hint">Se sube a Firebase Storage. También puedes pegar una URL directamente abajo.</p>
+          </div>
+        </div>
+        <input type="text" id="prodImg" placeholder="https://... o assets/img/catalog/foto.jpg">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="prodBadge">Etiqueta (opcional)</label>
+          <input type="text" id="prodBadge" placeholder="Popular">
+        </div>
+        <div class="field">
+          <label for="prodBadgeType">Color etiqueta</label>
+          <select id="prodBadgeType">
+            <option value="gold">Dorada</option>
+            <option value="red">Roja</option>
+          </select>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+        <button type="button" class="btn btn-outline" id="productEditorCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/shared.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

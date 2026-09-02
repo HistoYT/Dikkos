@@ -1,58 +1,20 @@
 /* ===================================================================
-   DIKKOS EMPANADAS — main.js
+   DIKKOS EMPANADAS — main.js (sitio público)
+   El panel de administrador vive aparte, en admin.html/admin.js.
 =================================================================== */
 (function(){
   "use strict";
+
+  var D = window.Dikkos;
 
   gsap.registerPlugin(ScrollTrigger);
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* =================================================================
-     CATALOG DATA
-     -> Catálogo de fábrica. El admin puede agregar/editar/borrar
-        productos desde el panel; esos cambios se guardan en
-        localStorage (PRODUCTS_KEY) y sobrescriben esta lista de
-        fábrica solo en el navegador donde se editaron.
-     -> img: ruta a una foto del producto. emoji: se usa si no hay foto.
-     -> price: número entero en pesos colombianos (sin puntos ni $).
+     CATÁLOGO
   ================================================================= */
-  var DEFAULT_PRODUCTS = [
-    { id:1,  cat:'tradicionales', name:'Empanada de Carne',     desc:'La clásica: carne de res sazonada a fuego lento.',            price:3500,  img:'assets/img/catalog/food-tray.jpg',    badge:'Popular', badgeType:'gold' },
-    { id:2,  cat:'tradicionales', name:'Empanada de Pollo',     desc:'Pollo desmechado con el toque Dikkos.',                        price:3500,  img:'assets/img/catalog/food-closeup.jpg' },
-    { id:3,  cat:'tradicionales', name:'Empanada Mixta',        desc:'Carne y pollo juntos en una sola mordida.',                    price:4000,  img:'assets/img/catalog/food-tray.jpg' },
-    { id:4,  cat:'tradicionales', name:'Empanada de Queso',     desc:'Queso derretido, sencilla y deliciosa.',                       price:3500,  img:'assets/img/catalog/food-closeup.jpg' },
-    { id:5,  cat:'especiales',    name:'Empanada Especial Dikkos', desc:'Nuestra receta secreta de la casa. Algo único.',            price:4500,  img:'assets/img/catalog/food-tray.jpg',    badge:'Estrella', badgeType:'red' },
-    { id:6,  cat:'especiales',    name:'Empanada Hawaiana',     desc:'Piña y queso: dulce y salada a la vez.',                       price:4000,  img:'assets/img/catalog/food-closeup.jpg', badge:'Nueva', badgeType:'gold' },
-    { id:7,  cat:'especiales',    name:'Empanada BBQ',          desc:'Carne desmechada bañada en salsa BBQ de la casa.',             price:4500,  img:'assets/img/catalog/food-tray.jpg' },
-    { id:8,  cat:'combos',        name:'Combo Fut x6',          desc:'6 empanadas surtidas, ideales para ver el partido.',           price:19000, img:'assets/img/catalog/food-closeup.jpg', badge:'Popular', badgeType:'gold' },
-    { id:9,  cat:'combos',        name:'Combo Dikkos x12',      desc:'12 empanadas surtidas + salsa de la casa.',                    price:36000, img:'assets/img/catalog/food-tray.jpg' },
-    { id:10, cat:'combos',        name:'Combo Pareja',          desc:'4 empanadas + 2 bebidas bien frías.',                          price:17000, img:'assets/img/catalog/food-closeup.jpg' },
-    { id:11, cat:'bebidas',       name:'Limonada de Coco',      desc:'Refrescante, cremosa y bien fría.',                            price:5000,  emoji:'🥥' },
-    { id:12, cat:'bebidas',       name:'Gaseosa',               desc:'Bien fría para acompañar tu pedido.',                          price:2500,  emoji:'🥤' }
-  ];
-  var WA_NUMBER = '573015729100';
-  var PRODUCTS_KEY = 'dikkos_products_v1';
-  var CART_KEY = 'dikkos_cart_v1';
-
-  function cloneProducts(list){ return list.map(function(p){ return Object.assign({}, p); }); }
-
-  function loadProducts(){
-    try {
-      var raw = localStorage.getItem(PRODUCTS_KEY);
-      if (raw){
-        var parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) return parsed;
-      }
-    } catch(e){}
-    return cloneProducts(DEFAULT_PRODUCTS);
-  }
-
-  var PRODUCTS = loadProducts();
+  var PRODUCTS = D.loadProducts();
   var currentFilter = 'todas';
-
-  function saveProducts(){
-    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(PRODUCTS));
-  }
 
   function getProduct(id){
     id = Number(id);
@@ -60,39 +22,21 @@
     return null;
   }
 
-  function formatPrice(n){
-    return '$' + Math.round(n).toLocaleString('es-CO');
-  }
-
-  function waLink(p){
-    var msg = 'Hola Dikkos! 🧡 Quiero pedir: ' + p.name + ' (' + formatPrice(p.price) + '). ¿Está disponible?';
-    return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
-  }
-
-  function mediaHTML(p){
-    return p.img
-      ? '<img src="'+p.img+'" alt="'+p.name+'" loading="lazy">'
-      : '<div class="product-emoji">'+(p.emoji||'🧡')+'</div>';
-  }
-
   function cardHTML(p){
     var badge = p.badge
-      ? '<span class="product-badge'+(p.badgeType==='gold' ? ' is-gold' : '')+'">'+p.badge+'</span>'
+      ? '<span class="product-badge'+(p.badgeType==='gold' ? ' is-gold' : '')+'">'+D.escapeHtml(p.badge)+'</span>'
       : '';
     return (
       '<div class="product-card" data-cat="'+p.cat+'">' +
-        '<div class="product-media">'+mediaHTML(p)+badge+'</div>' +
+        '<div class="product-media">'+D.mediaHTML(p)+badge+'</div>' +
         '<div class="product-body">' +
-          '<h3>'+p.name+'</h3>' +
-          '<p>'+p.desc+'</p>' +
+          '<h3>'+D.escapeHtml(p.name)+'</h3>' +
+          '<p>'+D.escapeHtml(p.desc)+'</p>' +
           '<div class="product-foot">' +
-            '<span class="product-price">'+formatPrice(p.price)+'</span>' +
-            '<div class="product-actions">' +
-              '<button class="product-add" type="button" data-id="'+p.id+'" aria-label="Agregar '+p.name+' al carrito"><svg><use href="#icon-cart"/></svg></button>' +
-              '<a class="product-order" href="'+waLink(p)+'" target="_blank" rel="noopener">' +
-                '<svg><use href="#icon-whatsapp"/></svg>Pedir' +
-              '</a>' +
-            '</div>' +
+            '<span class="product-price">'+D.formatPrice(p.price)+'</span>' +
+            '<button class="product-add" type="button" data-id="'+p.id+'" aria-label="Agregar '+D.escapeHtml(p.name)+' al carrito">' +
+              '<svg><use href="#icon-cart"/></svg>Agregar' +
+            '</button>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -138,40 +82,12 @@
   }
 
   /* =================================================================
-     FIREBASE (Authentication + Firestore)
-     -> Backend real para el panel de administrador: el login del admin
-        y los pedidos de los clientes viven en Firebase, no en este
-        navegador, así que cualquier pedido llega al admin sin importar
-        desde qué celular/computador lo hizo el cliente.
-     -> Configura tu proyecto en assets/js/firebase-config.js. Mientras
-        no lo hagas, el login y los pedidos quedan desactivados (el
-        resto del sitio —catálogo, carrito, WhatsApp— sigue funcionando).
-  ================================================================= */
-  var FB_PLACEHOLDER = 'PON_AQUI_TU_API_KEY';
-  var fbAuth = null, fbDb = null;
-
-  function firebaseReady(){ return !!(fbAuth && fbDb); }
-
-  function initFirebase(){
-    if (typeof FIREBASE_CONFIG === 'undefined') return;
-    if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === FB_PLACEHOLDER) return;
-    if (typeof firebase === 'undefined') return;
-    try {
-      firebase.initializeApp(FIREBASE_CONFIG);
-      fbAuth = firebase.auth();
-      fbDb = firebase.firestore();
-    } catch(e){
-      console.error('No se pudo iniciar Firebase:', e);
-    }
-  }
-
-  /* =================================================================
      CARRITO DE COMPRAS
      -> Estado guardado en localStorage (CART_KEY) como [{id, qty}].
-     -> Al confirmar, el pedido se guarda en Firestore (para el panel
-        del admin) y además se abre WhatsApp con el detalle, que sigue
-        siendo el canal directo de contacto con el cliente.
+     -> Al confirmar, el pedido se guarda en Firestore y se abre el
+        chat en vivo para ese pedido.
   ================================================================= */
+  var CART_KEY = 'dikkos_cart_v1';
   var CART = [];
   var checkoutPayMethod = 'contra_entrega';
   var PAYMENT_LINK = ''; // Pega aquí tu link de pago (Wompi, ePayco, PayU, Mercado Pago...) cuando lo tengas.
@@ -206,6 +122,7 @@
     if (entry) entry.qty += 1;
     else CART.push({ id:id, qty:1 });
     saveCart();
+    resetCartSuccess();
     renderCart();
     openCart();
   }
@@ -240,12 +157,12 @@
     if (!p) return '';
     return (
       '<div class="cart-item" data-id="'+p.id+'">' +
-        '<div class="cart-item-media">'+mediaHTML(p)+'</div>' +
+        '<div class="cart-item-media">'+D.mediaHTML(p)+'</div>' +
         '<div class="cart-item-info">' +
-          '<h4>'+p.name+'</h4>' +
-          '<span class="cart-item-price">'+formatPrice(p.price)+' c/u</span>' +
+          '<h4>'+D.escapeHtml(p.name)+'</h4>' +
+          '<span class="cart-item-price">'+D.formatPrice(p.price)+' c/u</span>' +
         '</div>' +
-        '<button class="cart-item-remove" type="button" aria-label="Eliminar '+p.name+'"><svg><use href="#icon-trash"/></svg></button>' +
+        '<button class="cart-item-remove" type="button" aria-label="Eliminar '+D.escapeHtml(p.name)+'"><svg><use href="#icon-trash"/></svg></button>' +
         '<div class="cart-item-qty">' +
           '<button class="qty-btn qty-minus" type="button" aria-label="Quitar uno"><svg><use href="#icon-minus"/></svg></button>' +
           '<span class="qty-val">'+item.qty+'</span>' +
@@ -268,10 +185,25 @@
     var n = cartCount();
     count.textContent = n;
     count.classList.toggle('is-visible', n > 0);
-    total.textContent = formatPrice(cartTotal());
+    total.textContent = D.formatPrice(cartTotal());
   }
 
   function openCart(){ openPanel(document.getElementById('cartDrawer')); }
+
+  function showCartSuccess(name, total){
+    document.getElementById('cartDrawer').classList.add('is-order-success');
+    document.getElementById('cartCheckoutForm').hidden = true;
+    document.getElementById('cartSuccessMsg').textContent =
+      'Gracias' + (name ? ', ' + name : '') + '. Tu pedido por ' + D.formatPrice(total) +
+      ' fue recibido. Te contactaremos pronto para confirmar la entrega.';
+    document.getElementById('cartSuccess').hidden = false;
+  }
+
+  function resetCartSuccess(){
+    document.getElementById('cartDrawer').classList.remove('is-order-success');
+    document.getElementById('cartCheckoutForm').hidden = false;
+    document.getElementById('cartSuccess').hidden = true;
+  }
 
   function handleCheckout(){
     if (!CART.length) return;
@@ -279,11 +211,18 @@
     var phoneEl = document.getElementById('custPhone');
     var addressEl = document.getElementById('custAddress');
     var errEl = document.getElementById('cartOrderError');
+    var btn = document.getElementById('cartCheckout');
     var name = nameEl.value.trim();
     var phone = phoneEl.value.trim();
     var address = addressEl.value.trim();
 
     if (!name || !phone){
+      errEl.textContent = 'Escribe tu nombre y teléfono para continuar.';
+      errEl.hidden = false;
+      return;
+    }
+    if (!D.firebaseReady()){
+      errEl.textContent = 'Los pedidos en línea aún no están activados. Vuelve a intentarlo más tarde.';
       errEl.hidden = false;
       return;
     }
@@ -296,39 +235,35 @@
     var total = cartTotal();
     var method = checkoutPayMethod;
 
-    if (method === 'online' && PAYMENT_LINK){
-      window.open(PAYMENT_LINK, '_blank', 'noopener');
-    }
-
-    var waMsg = 'Hola Dikkos! 🧡 Quiero hacer este pedido:\n' +
-      itemsSnapshot.map(function(it){ return '- ' + it.qty + 'x ' + it.name + ' (' + formatPrice(it.price * it.qty) + ')'; }).join('\n') +
-      '\n\nTotal: ' + formatPrice(total) +
-      '\nNombre: ' + name +
-      '\nTeléfono: ' + phone +
-      (address ? '\nDirección: ' + address : '') +
-      '\nPago: ' + (method === 'online' ? 'En línea' : 'Contra entrega');
-    window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(waMsg), '_blank', 'noopener');
-
-    if (firebaseReady()){
-      fbDb.collection('orders').add({
-        items: itemsSnapshot,
-        total: total,
-        customerName: name,
-        phone: phone,
-        address: address,
-        paymentMethod: method,
-        status: 'nuevo',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).catch(function(err){ console.error('No se pudo guardar el pedido en Firestore:', err); });
-    }
-
-    CART = [];
-    saveCart();
-    renderCart();
-    nameEl.value = '';
-    phoneEl.value = '';
-    addressEl.value = '';
-    closeAllPanels();
+    btn.disabled = true;
+    D.db().collection('orders').add({
+      items: itemsSnapshot,
+      total: total,
+      customerName: name,
+      phone: phone,
+      address: address,
+      paymentMethod: method,
+      status: 'nuevo',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(docRef){
+      if (method === 'online' && PAYMENT_LINK){
+        window.open(PAYMENT_LINK, '_blank', 'noopener');
+      }
+      CART = [];
+      saveCart();
+      renderCart();
+      showCartSuccess(name, total);
+      startChat(docRef.id, name);
+      nameEl.value = '';
+      phoneEl.value = '';
+      addressEl.value = '';
+    }).catch(function(err){
+      console.error('No se pudo guardar el pedido en Firestore:', err);
+      errEl.textContent = 'No pudimos enviar tu pedido. Intenta de nuevo.';
+      errEl.hidden = false;
+    }).finally(function(){
+      btn.disabled = false;
+    });
   }
 
   function initCart(){
@@ -342,12 +277,16 @@
     var emptyCta = document.getElementById('cartEmptyCta');
     var checkoutBtn = document.getElementById('cartCheckout');
     var payMethod = document.getElementById('payMethod');
+    var successClose = document.getElementById('cartSuccessClose');
+    var heroCartBtn = document.getElementById('heroCartBtn');
 
     if (cartBtn) cartBtn.addEventListener('click', openCart);
+    if (heroCartBtn) heroCartBtn.addEventListener('click', openCart);
     if (closeBtn) closeBtn.addEventListener('click', closeAllPanels);
     if (emptyCta) emptyCta.addEventListener('click', closeAllPanels);
     if (clearBtn) clearBtn.addEventListener('click', clearCart);
     if (checkoutBtn) checkoutBtn.addEventListener('click', handleCheckout);
+    if (successClose) successClose.addEventListener('click', function(){ resetCartSuccess(); closeAllPanels(); });
 
     ['custName', 'custPhone'].forEach(function(id){
       var el = document.getElementById(id);
@@ -383,7 +322,7 @@
   }
 
   /* =================================================================
-     PANEL / MODAL HELPERS (compartidos por carrito y admin)
+     PANEL / MODAL HELPERS (compartidos por carrito y chat)
   ================================================================= */
   function openPanel(el){
     if (!el) return;
@@ -395,23 +334,11 @@
 
   function closeAllPanels(){
     document.getElementById('uiOverlay').classList.remove('is-open');
-    document.querySelectorAll('.cart-drawer.is-open, .ui-modal.is-open').forEach(function(el){
+    document.querySelectorAll('.cart-drawer.is-open, .chat-panel.is-open').forEach(function(el){
       el.classList.remove('is-open');
       el.setAttribute('aria-hidden', 'true');
     });
     document.body.classList.remove('no-scroll');
-  }
-
-  // Closes a single panel, leaving any panel underneath it (e.g. the
-  // admin panel behind the product editor) open and visible.
-  function closePanel(el){
-    if (!el) return;
-    el.classList.remove('is-open');
-    el.setAttribute('aria-hidden', 'true');
-    if (!document.querySelector('.cart-drawer.is-open, .ui-modal.is-open')){
-      document.getElementById('uiOverlay').classList.remove('is-open');
-      document.body.classList.remove('no-scroll');
-    }
   }
 
   function initPanels(){
@@ -423,336 +350,131 @@
   }
 
   /* =================================================================
-     ADMINISTRADOR
-     -> El login usa Firebase Authentication (correo/contraseña real,
-        creado por ti en la consola de Firebase — ver
-        assets/js/firebase-config.js). Ya no hay contraseña alguna
-        escrita en este archivo.
-     -> Los PRODUCTOS se siguen editando en localStorage (no dependen
-        de Firebase). Los PEDIDOS viven en Firestore y llegan en vivo
-        a esta pestaña sin importar desde qué dispositivo pidió el
-        cliente.
+     CHAT EN VIVO
+     -> Al confirmar un pedido se crea (o reabre) una conversación
+        ligada a ese orderId en Firestore: chats/{orderId}/messages.
+        El equipo Dikkos responde desde admin.html; los mensajes
+        llegan en tiempo real a ambos lados por onSnapshot.
   ================================================================= */
-  var isAdminLoggedIn = false;
-  var currentAdminTab = 'pedidos';
+  var CHAT_ORDER_KEY = 'dikkos_chat_order_id';
+  var chatOrderId = null;
+  var chatCustomerName = '';
+  var chatUnsub = null;
+  var chatOpenedAt = 0;
 
-  function setAdminUI(){
-    var btn = document.getElementById('adminBtn');
-    if (btn) btn.classList.toggle('is-authed', isAdminLoggedIn);
-  }
-
-  function openAdminEntry(){
-    var notice = document.getElementById('firebaseSetupNotice');
-    var form = document.getElementById('adminLoginForm');
-    if (!firebaseReady()){
-      notice.hidden = false;
-      form.hidden = true;
-      openPanel(document.getElementById('adminLoginModal'));
-      return;
-    }
-    notice.hidden = true;
-    form.hidden = false;
-    if (isAdminLoggedIn) openAdminPanel();
-    else openPanel(document.getElementById('adminLoginModal'));
-  }
-
-  function openAdminPanel(){
-    renderAdminList();
-    renderOrders();
-    setAdminTab('pedidos');
-    openPanel(document.getElementById('adminPanelModal'));
-  }
-
-  function setAdminTab(tab){
-    currentAdminTab = tab;
-    document.querySelectorAll('.admin-tab').forEach(function(btn){
-      btn.classList.toggle('is-active', btn.dataset.tab === tab);
-    });
-    var showOrders = tab === 'pedidos';
-    document.getElementById('adminProductActions').hidden = showOrders;
-    document.querySelectorAll('#adminPanelModal > .admin-note[data-tab="productos"]').forEach(function(el){
-      el.hidden = showOrders;
-    });
-    document.getElementById('adminProductList').hidden = showOrders;
-    document.getElementById('ordersFirebaseNotice').hidden = !showOrders || firebaseReady();
-    document.getElementById('adminOrdersList').hidden = !showOrders || !firebaseReady();
-  }
-
-  function initAdminTabs(){
-    var tabs = document.getElementById('adminTabs');
-    if (!tabs) return;
-    tabs.addEventListener('click', function(e){
-      var btn = e.target.closest('.admin-tab');
-      if (!btn) return;
-      setAdminTab(btn.dataset.tab);
-    });
-  }
-
-  /* ---------- PEDIDOS (Firestore) ---------- */
-  var ORDERS = [];
-  var ordersUnsub = null;
-  var ORDER_STATUSES = [
-    { value:'nuevo', label:'Nuevo' },
-    { value:'preparando', label:'En preparación' },
-    { value:'listo', label:'Listo' },
-    { value:'entregado', label:'Entregado' },
-    { value:'cancelado', label:'Cancelado' }
-  ];
-
-  function orderStatusLabel(value){
-    var match = ORDER_STATUSES.filter(function(s){ return s.value === value; })[0];
-    return match ? match.label : ORDER_STATUSES[0].label;
-  }
-
-  function timeAgo(ts){
-    if (!ts || typeof ts.toDate !== 'function') return 'justo ahora';
-    var mins = Math.round((Date.now() - ts.toDate().getTime()) / 60000);
-    if (mins < 1) return 'justo ahora';
-    if (mins < 60) return 'hace ' + mins + ' min';
-    var hrs = Math.round(mins / 60);
-    if (hrs < 24) return 'hace ' + hrs + ' h';
-    return 'hace ' + Math.round(hrs / 24) + ' d';
-  }
-
-  function orderRowHTML(order){
-    var statusOptions = ORDER_STATUSES.map(function(s){
-      return '<option value="'+s.value+'"'+(order.status===s.value?' selected':'')+'>'+s.label+'</option>';
-    }).join('');
-    var itemsList = (order.items || []).map(function(it){
-      return '<li>'+it.qty+'x '+it.name+' — '+formatPrice(it.price*it.qty)+'</li>';
-    }).join('');
+  function chatMsgHTML(msg){
+    var mine = msg.sender === 'customer';
     return (
-      '<div class="order-row status-'+(order.status||'nuevo')+'" data-id="'+order._id+'">' +
-        '<div class="order-row-head">' +
-          '<div><h4>'+(order.customerName||'Sin nombre')+'</h4>' +
-            '<span class="order-meta">'+(order.phone||'')+' · '+timeAgo(order.createdAt)+'</span></div>' +
-          '<span class="order-status-badge">'+orderStatusLabel(order.status)+'</span>' +
-        '</div>' +
-        '<ul class="order-items">'+itemsList+'</ul>' +
-        (order.address ? '<div class="order-address">📍 '+order.address+'</div>' : '') +
-        '<div class="order-row-foot">' +
-          '<span class="order-total">Total: '+formatPrice(order.total||0)+'</span>' +
-          '<span class="order-pay">'+(order.paymentMethod==='online' ? 'Pago en línea' : 'Contra entrega')+'</span>' +
-        '</div>' +
-        '<select class="order-status-select" aria-label="Estado del pedido">'+statusOptions+'</select>' +
+      '<div class="chat-msg ' + (mine ? 'is-customer' : 'is-admin') + '">' +
+        D.escapeHtml(msg.text) +
+        '<span class="chat-msg-meta">' + (mine ? 'Tú' : 'Dikkos') + '</span>' +
       '</div>'
     );
   }
 
-  function renderOrders(){
-    var list = document.getElementById('adminOrdersList');
-    if (!list) return;
-    list.innerHTML = ORDERS.length
-      ? ORDERS.map(orderRowHTML).join('')
-      : '<p class="admin-empty-note">Aún no han llegado pedidos.</p>';
-    updateOrdersBadge();
+  function renderChatMessages(list){
+    var box = document.getElementById('chatMessages');
+    if (!box) return;
+    box.innerHTML = list.length
+      ? list.map(chatMsgHTML).join('')
+      : '<p class="chat-empty-note">Escríbenos lo que necesites sobre tu pedido.</p>';
+    box.scrollTop = box.scrollHeight;
   }
 
-  function updateOrdersBadge(){
-    var badge = document.getElementById('ordersNewBadge');
-    if (!badge) return;
-    var n = ORDERS.filter(function(o){ return o.status === 'nuevo'; }).length;
-    badge.textContent = n;
-    badge.hidden = n === 0;
+  function updateChatBadge(list){
+    var badge = document.getElementById('chatBadge');
+    var panel = document.getElementById('chatPanel');
+    if (!badge || !panel) return;
+    var panelOpen = panel.classList.contains('is-open');
+    var unseen = list.filter(function(m){
+      return m.sender === 'admin' && m.createdAt && typeof m.createdAt.toMillis === 'function' && m.createdAt.toMillis() > chatOpenedAt;
+    }).length;
+    badge.textContent = unseen;
+    badge.hidden = panelOpen || unseen === 0;
   }
 
-  function subscribeOrders(){
-    if (!firebaseReady() || ordersUnsub) return;
-    ordersUnsub = fbDb.collection('orders').orderBy('createdAt', 'desc').onSnapshot(function(snap){
-      ORDERS = snap.docs.map(function(doc){
-        var d = doc.data();
-        d._id = doc.id;
-        return d;
+  function subscribeChat(orderId){
+    if (chatUnsub) chatUnsub();
+    chatUnsub = D.db().collection('chats').doc(orderId).collection('messages')
+      .orderBy('createdAt')
+      .onSnapshot(function(snap){
+        var list = snap.docs.map(function(d){ return d.data(); });
+        renderChatMessages(list);
+        updateChatBadge(list);
+      }, function(err){
+        console.error('No se pudo cargar el chat:', err);
+        renderChatMessages([]);
       });
-      renderOrders();
-    }, function(err){
-      console.error('No se pudieron cargar los pedidos:', err);
+  }
+
+  function openChatPanel(){
+    if (!chatOrderId) return;
+    chatOpenedAt = Date.now();
+    openPanel(document.getElementById('chatPanel'));
+    document.getElementById('chatBadge').hidden = true;
+  }
+
+  function startChat(orderId, name){
+    chatOrderId = orderId;
+    chatCustomerName = name;
+    try { localStorage.setItem(CHAT_ORDER_KEY, orderId); } catch(e){}
+    document.getElementById('chatFloat').hidden = false;
+    D.db().collection('chats').doc(orderId).set({
+      customerName: name,
+      lastMessage: '',
+      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+      unreadForAdmin: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge:true }).catch(function(err){ console.error('No se pudo crear el chat:', err); });
+    subscribeChat(orderId);
+    openChatPanel();
+  }
+
+  function sendChatMessage(text){
+    text = text.trim();
+    if (!text || !chatOrderId || !D.firebaseReady()) return;
+    var db = D.db();
+    db.collection('chats').doc(chatOrderId).collection('messages').add({
+      sender: 'customer',
+      senderName: chatCustomerName,
+      text: text,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    db.collection('chats').doc(chatOrderId).set({
+      lastMessage: text,
+      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+      unreadForAdmin: true,
+      customerName: chatCustomerName
+    }, { merge:true });
   }
 
-  function unsubscribeOrders(){
-    if (ordersUnsub){ ordersUnsub(); ordersUnsub = null; }
-    ORDERS = [];
-    updateOrdersBadge();
-  }
+  function initChat(){
+    var floatBtn = document.getElementById('chatFloat');
+    var closeBtn = document.getElementById('chatClose');
+    var form = document.getElementById('chatForm');
+    var input = document.getElementById('chatInput');
+    if (!floatBtn) return;
 
-  function initOrders(){
-    var list = document.getElementById('adminOrdersList');
-    if (!list) return;
-    list.addEventListener('change', function(e){
-      var select = e.target.closest('.order-status-select');
-      if (!select || !firebaseReady()) return;
-      var row = select.closest('.order-row');
-      fbDb.collection('orders').doc(row.dataset.id).update({ status: select.value }).catch(function(err){
-        console.error('No se pudo actualizar el pedido:', err);
-      });
-    });
-  }
-
-  /* ---------- PRODUCTOS (localStorage) ---------- */
-  function adminRowHTML(p){
-    return (
-      '<div class="admin-product-row" data-id="'+p.id+'">' +
-        '<div class="thumb">'+mediaHTML(p)+'</div>' +
-        '<div class="info"><h4>'+p.name+'</h4><span>'+p.cat+'</span></div>' +
-        '<div class="price">'+formatPrice(p.price)+'</div>' +
-        '<div class="admin-row-actions">' +
-          '<button class="row-edit" type="button" aria-label="Editar '+p.name+'"><svg><use href="#icon-pencil"/></svg></button>' +
-          '<button class="row-delete" type="button" aria-label="Eliminar '+p.name+'"><svg><use href="#icon-trash"/></svg></button>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-
-  function renderAdminList(){
-    var list = document.getElementById('adminProductList');
-    if (!list) return;
-    list.innerHTML = PRODUCTS.length
-      ? PRODUCTS.map(adminRowHTML).join('')
-      : '<p class="admin-empty-note">No hay productos. Agrega el primero con "+ Nuevo producto".</p>';
-  }
-
-  function openProductEditor(product){
-    var form = document.getElementById('productEditorForm');
-    var title = document.getElementById('productEditorTitle');
-    form.reset();
-    document.getElementById('prodId').value = product ? product.id : '';
-    document.getElementById('prodName').value = product ? product.name : '';
-    document.getElementById('prodCat').value = product ? product.cat : 'tradicionales';
-    document.getElementById('prodDesc').value = product ? product.desc : '';
-    document.getElementById('prodPrice').value = product ? product.price : '';
-    document.getElementById('prodEmoji').value = product && product.emoji ? product.emoji : '';
-    document.getElementById('prodImg').value = product && product.img ? product.img : '';
-    document.getElementById('prodBadge').value = product && product.badge ? product.badge : '';
-    document.getElementById('prodBadgeType').value = product && product.badgeType ? product.badgeType : 'gold';
-    title.textContent = product ? 'Editar producto' : 'Nuevo producto';
-    openPanel(document.getElementById('productEditorModal'));
-  }
-
-  function saveProductFromForm(e){
-    e.preventDefault();
-    var id = document.getElementById('prodId').value;
-    var price = Number(document.getElementById('prodPrice').value);
-    if (!price || price < 0) return;
-
-    var data = {
-      cat: document.getElementById('prodCat').value,
-      name: document.getElementById('prodName').value.trim(),
-      desc: document.getElementById('prodDesc').value.trim(),
-      price: price,
-      emoji: document.getElementById('prodEmoji').value.trim(),
-      img: document.getElementById('prodImg').value.trim(),
-      badge: document.getElementById('prodBadge').value.trim(),
-      badgeType: document.getElementById('prodBadgeType').value
-    };
-    if (!data.name || !data.desc) return;
-    if (!data.img) delete data.img;
-    if (!data.emoji) delete data.emoji;
-    if (!data.badge){ delete data.badge; delete data.badgeType; }
-
-    if (id){
-      var existing = getProduct(id);
-      if (existing) Object.assign(existing, data);
-    } else {
-      var nextId = PRODUCTS.reduce(function(max, p){ return Math.max(max, p.id); }, 0) + 1;
-      data.id = nextId;
-      PRODUCTS.push(data);
-    }
-
-    saveProducts();
-    renderCatalog();
-    renderAdminList();
-    closePanel(document.getElementById('productEditorModal'));
-  }
-
-  function initAdmin(){
-    setAdminUI();
-
-    var adminBtn = document.getElementById('adminBtn');
-    var loginForm = document.getElementById('adminLoginForm');
-    var loginClose = document.getElementById('adminLoginClose');
-    var loginError = document.getElementById('adminError');
-    var panelClose = document.getElementById('adminPanelClose');
-    var logoutBtn = document.getElementById('adminLogout');
-    var addBtn = document.getElementById('adminAddProduct');
-    var restoreBtn = document.getElementById('adminRestore');
-    var productList = document.getElementById('adminProductList');
-    var editorForm = document.getElementById('productEditorForm');
-    var editorClose = document.getElementById('productEditorClose');
-    var editorCancel = document.getElementById('productEditorCancel');
-
-    if (adminBtn) adminBtn.addEventListener('click', openAdminEntry);
-    if (loginClose) loginClose.addEventListener('click', closeAllPanels);
-    if (panelClose) panelClose.addEventListener('click', closeAllPanels);
-    if (editorClose) editorClose.addEventListener('click', function(){ closePanel(document.getElementById('productEditorModal')); });
-    if (editorCancel) editorCancel.addEventListener('click', function(){ closePanel(document.getElementById('productEditorModal')); });
-
-    if (loginForm){
-      loginForm.addEventListener('submit', function(e){
+    floatBtn.addEventListener('click', openChatPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closeAllPanels);
+    if (form){
+      form.addEventListener('submit', function(e){
         e.preventDefault();
-        if (!firebaseReady()) return;
-        var email = document.getElementById('adminUser').value.trim();
-        var pass = document.getElementById('adminPass').value;
-        loginError.hidden = true;
-        fbAuth.signInWithEmailAndPassword(email, pass).then(function(){
-          loginForm.reset();
-          closeAllPanels();
-          openAdminPanel();
-        }).catch(function(){
-          loginError.hidden = false;
-        });
+        sendChatMessage(input.value);
+        input.value = '';
       });
     }
 
-    if (logoutBtn){
-      logoutBtn.addEventListener('click', function(){
-        if (firebaseReady()) fbAuth.signOut();
-        closeAllPanels();
-      });
-    }
-
-    if (addBtn) addBtn.addEventListener('click', function(){ openProductEditor(null); });
-
-    if (restoreBtn){
-      restoreBtn.addEventListener('click', function(){
-        if (!window.confirm('¿Restaurar el catálogo original? Se perderán tus cambios guardados en este navegador.')) return;
-        localStorage.removeItem(PRODUCTS_KEY);
-        PRODUCTS = cloneProducts(DEFAULT_PRODUCTS);
-        renderCatalog();
-        renderAdminList();
-      });
-    }
-
-    if (productList){
-      productList.addEventListener('click', function(e){
-        var row = e.target.closest('.admin-product-row');
-        if (!row) return;
-        var id = row.dataset.id;
-        if (e.target.closest('.row-edit')){
-          openProductEditor(getProduct(id));
-        } else if (e.target.closest('.row-delete')){
-          var p = getProduct(id);
-          if (p && window.confirm('¿Eliminar "'+p.name+'" del catálogo?')){
-            PRODUCTS = PRODUCTS.filter(function(item){ return item.id !== Number(id); });
-            saveProducts();
-            renderCatalog();
-            renderAdminList();
-          }
+    if (D.firebaseReady()){
+      try {
+        var savedId = localStorage.getItem(CHAT_ORDER_KEY);
+        if (savedId){
+          chatOrderId = savedId;
+          floatBtn.hidden = false;
+          subscribeChat(savedId);
         }
-      });
+      } catch(e){}
     }
-
-    if (editorForm) editorForm.addEventListener('submit', saveProductFromForm);
-  }
-
-  function initAdminAuth(){
-    if (!firebaseReady()){ setAdminUI(); return; }
-    fbAuth.onAuthStateChanged(function(user){
-      isAdminLoggedIn = !!user;
-      setAdminUI();
-      if (isAdminLoggedIn) subscribeOrders();
-      else unsubscribeOrders();
-    });
   }
 
   /* =================================================================
@@ -800,36 +522,57 @@
       });
     }
 
-    var progress = { val:0 };
-    var tl = gsap.timeline();
-    tl.to(progress, {
-      val:92, duration:1.8, ease:'power2.out',
-      onUpdate:function(){
-        var v = Math.round(progress.val);
-        pct.textContent = v;
-        fill.style.width = v+'%';
-      }
-    });
+    /* Progreso estrictamente lineal y monótono (nunca retrocede):
+       avanza a velocidad constante hasta PRE_LOAD_CAP mientras la
+       página sigue cargando, y solo cruza a 100 una vez que el evento
+       'load' real ya se disparó — así el 100% siempre coincide con
+       la carga completa, sin importar si la red es rápida o lenta. */
+    var RATE_PER_SEC = 46;
+    var PRE_LOAD_CAP = 90;
+    var progress = 0;
+    var pageLoaded = document.readyState === 'complete';
 
-    window.addEventListener('load', function(){
-      gsap.to(progress, {
-        val:100, duration:.5, ease:'power1.out',
-        onUpdate:function(){
-          var v = Math.round(progress.val);
-          pct.textContent = v;
-          fill.style.width = v+'%';
-        },
+    if (!pageLoaded){
+      window.addEventListener('load', function(){ pageLoaded = true; });
+    }
+
+    function render(v){
+      var rv = Math.round(v);
+      pct.textContent = rv;
+      fill.style.width = rv + '%';
+    }
+
+    function finish(){
+      gsap.to(pre, {
+        yPercent:-100, duration:.9, ease:'power4.inOut', delay:.15,
         onComplete:function(){
-          gsap.to(pre, {
-            yPercent:-100, duration:.9, ease:'power4.inOut', delay:.15,
-            onComplete:function(){
-              pre.style.display = 'none';
-              done();
-            }
-          });
+          pre.style.display = 'none';
+          done();
         }
       });
-    });
+    }
+
+    /* lastTime empieza null y se fija con el timestamp del propio rAF en
+       el primer frame (en vez de un performance.now() externo) — mezclar
+       ambos relojes puede dar un primer delta negativo en algunos
+       navegadores, lo que hacía que el contador bajara de 0% a -1%. */
+    var lastTime = null;
+    function tick(now){
+      if (lastTime === null) lastTime = now;
+      var deltaSec = Math.max(0, (now - lastTime) / 1000);
+      lastTime = now;
+      var cap = pageLoaded ? 100 : PRE_LOAD_CAP;
+      if (progress < cap){
+        progress = Math.min(cap, progress + RATE_PER_SEC * deltaSec);
+        render(progress);
+      }
+      if (progress >= 100){
+        finish();
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   }
 
   /* =================================================================
@@ -1032,14 +775,11 @@
   document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    initFirebase();
+    D.initFirebase();
     initCatalog();
     initCart();
     initPanels();
-    initAdmin();
-    initAdminTabs();
-    initOrders();
-    initAdminAuth();
+    initChat();
     initHeader();
     initAnchors();
     initLightbox();
