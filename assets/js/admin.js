@@ -69,70 +69,353 @@
   /* =================================================================
      NAVEGACIÓN DE SECCIONES
   ================================================================= */
+  var SECTION_LABELS = { pedidos:'Pedidos', productos:'Productos', finanzas:'Finanzas', chats:'Chats' };
+
+  function activateSection(section){
+    var nav = document.getElementById('adminNav');
+    var title = document.getElementById('adminSectionTitle');
+    nav.querySelectorAll('button[data-section]').forEach(function(b){ b.classList.toggle('is-active', b.dataset.section === section); });
+    document.querySelectorAll('.admin-section').forEach(function(sec){
+      sec.classList.toggle('is-active', sec.dataset.section === section);
+    });
+    title.textContent = SECTION_LABELS[section] || '';
+    document.getElementById('adminSidebar').classList.remove('is-open');
+    if (section === 'finanzas') renderFinance();
+  }
+
   function initNav(){
     var nav = document.getElementById('adminNav');
     var sidebar = document.getElementById('adminSidebar');
     var burger = document.getElementById('adminBurger');
-    var title = document.getElementById('adminSectionTitle');
-    var labels = { pedidos:'Pedidos', productos:'Productos', finanzas:'Finanzas', chats:'Chats' };
 
     nav.addEventListener('click', function(e){
       var btn = e.target.closest('button[data-section]');
       if (!btn) return;
-      var section = btn.dataset.section;
-      nav.querySelectorAll('button').forEach(function(b){ b.classList.toggle('is-active', b === btn); });
-      document.querySelectorAll('.admin-section').forEach(function(sec){
-        sec.classList.toggle('is-active', sec.dataset.section === section);
-      });
-      title.textContent = labels[section] || '';
-      sidebar.classList.remove('is-open');
-      if (section === 'finanzas') renderFinance();
+      activateSection(btn.dataset.section);
     });
 
     if (burger) burger.addEventListener('click', function(){ sidebar.classList.toggle('is-open'); });
   }
 
   /* =================================================================
+     TEMA DEL PANEL (Claro / Oscuro / Neón fosforescente)
+     -> Se guarda en localStorage y se aplica como atributo en <html>;
+        admin.html ya lo lee antes de pintar (ver script inline en
+        <head>) para evitar parpadeos al cargar.
+  ================================================================= */
+  var THEME_KEY = 'dikkos_admin_theme';
+
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e){}
+    document.querySelectorAll('.theme-option').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.dataset.theme === theme);
+    });
+  }
+
+  function initTheme(){
+    var toggleBtn = document.getElementById('themeToggleBtn');
+    var menu = document.getElementById('themeMenu');
+    if (!toggleBtn || !menu) return;
+    var current = document.documentElement.getAttribute('data-theme') || 'light';
+
+    document.querySelectorAll('.theme-option').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.dataset.theme === current);
+      btn.addEventListener('click', function(){
+        applyTheme(btn.dataset.theme);
+        menu.hidden = true;
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    toggleBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var willOpen = menu.hidden;
+      if (willOpen) closeSearchResults();
+      menu.hidden = !willOpen;
+      toggleBtn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    document.addEventListener('click', function(e){
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== toggleBtn){
+        menu.hidden = true;
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* =================================================================
+     BÚSQUEDA GLOBAL — un solo lugar para encontrar secciones, acciones
+     rápidas, pedidos, productos y chats en todo el panel.
+  ================================================================= */
+  var searchFlatResults = [];
+  var searchSelectedIndex = -1;
+
+  function flashHighlight(el){
+    if (!el) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.classList.remove('search-flash');
+    void el.offsetWidth;
+    el.classList.add('search-flash');
+    setTimeout(function(){ el.classList.remove('search-flash'); }, 1600);
+  }
+
+  function buildSearchResults(term){
+    term = term.trim().toLowerCase();
+    if (!term) return null;
+    var groups = { secciones:[], acciones:[], pedidos:[], productos:[], chats:[] };
+
+    [
+      { label:'Pedidos', section:'pedidos' },
+      { label:'Productos', section:'productos' },
+      { label:'Finanzas', section:'finanzas' },
+      { label:'Chats', section:'chats' }
+    ].forEach(function(s){
+      if (s.label.toLowerCase().indexOf(term) > -1){
+        groups.secciones.push({ label:s.label, run:function(){ activateSection(s.section); } });
+      }
+    });
+
+    [
+      { label:'Nuevo pedido', run:function(){ activateSection('pedidos'); openOrderEditor(null); } },
+      { label:'Nuevo producto', run:function(){ activateSection('productos'); openProductEditor(null); } },
+      { label:'Restaurar catálogo', run:function(){ activateSection('productos'); var btn = document.getElementById('adminRestore'); if (btn) btn.click(); } },
+      { label:'Cambiar apariencia del panel', run:function(){ var btn = document.getElementById('themeToggleBtn'); if (btn) btn.click(); } },
+      { label:'Cerrar sesión', run:function(){ D.auth().signOut(); } }
+    ].forEach(function(a){
+      if (a.label.toLowerCase().indexOf(term) > -1) groups.acciones.push(a);
+    });
+
+    ORDERS.forEach(function(o){
+      var hay = ((o.customerName||'') + ' ' + (o.phone||'') + ' ' + o._id).toLowerCase();
+      if (hay.indexOf(term) === -1) return;
+      groups.pedidos.push({
+        label: o.customerName || 'Sin nombre',
+        meta: shortOrderId(o._id),
+        run:function(){
+          activateSection('pedidos');
+          var input = document.getElementById('ordersSearch');
+          input.value = o.customerName || o._id;
+          ordersSearchTerm = input.value;
+          renderOrders();
+          flashHighlight(document.querySelector('#adminOrdersList tr[data-id="'+o._id+'"]'));
+        }
+      });
+    });
+
+    PRODUCTS.forEach(function(p){
+      if (p.name.toLowerCase().indexOf(term) === -1) return;
+      groups.productos.push({
+        label: p.name,
+        meta: D.formatPrice(p.price),
+        run:function(){
+          activateSection('productos');
+          flashHighlight(document.querySelector('.admin-product-row[data-id="'+p.id+'"]'));
+        }
+      });
+    });
+
+    CHATS.forEach(function(c){
+      var hay = ((c.customerName||'') + ' ' + (c.lastMessage||'')).toLowerCase();
+      if (hay.indexOf(term) === -1) return;
+      groups.chats.push({
+        label: c.customerName || 'Cliente',
+        meta: c.lastMessage || '',
+        run:function(){ activateSection('chats'); openChat(c._id); }
+      });
+    });
+
+    return groups;
+  }
+
+  function renderSearchResults(term){
+    var wrap = document.getElementById('globalSearchResults');
+    var groups = buildSearchResults(term);
+    searchFlatResults = [];
+    searchSelectedIndex = -1;
+    if (!groups){
+      wrap.hidden = true;
+      wrap.innerHTML = '';
+      return;
+    }
+    var groupDefs = [
+      { key:'secciones', label:'Secciones' },
+      { key:'acciones', label:'Acciones' },
+      { key:'pedidos', label:'Pedidos' },
+      { key:'productos', label:'Productos' },
+      { key:'chats', label:'Chats' }
+    ];
+    var html = '';
+    groupDefs.forEach(function(g){
+      var items = groups[g.key];
+      if (!items || !items.length) return;
+      html += '<div class="gsr-group-label">'+g.label+'</div>';
+      items.slice(0, 6).forEach(function(item){
+        var idx = searchFlatResults.length;
+        searchFlatResults.push(item);
+        html += '<button type="button" class="gsr-item" data-idx="'+idx+'"><strong>'+D.escapeHtml(item.label)+'</strong>'+(item.meta ? '<span class="gsr-item-meta">'+D.escapeHtml(item.meta)+'</span>' : '')+'</button>';
+      });
+    });
+    wrap.innerHTML = searchFlatResults.length ? html : '<p class="gsr-empty">Sin resultados para "'+D.escapeHtml(term.trim())+'".</p>';
+    wrap.hidden = false;
+  }
+
+  function closeSearchResults(){
+    var wrap = document.getElementById('globalSearchResults');
+    wrap.hidden = true;
+    wrap.innerHTML = '';
+    searchFlatResults = [];
+    searchSelectedIndex = -1;
+  }
+
+  function runSearchResult(idx){
+    var item = searchFlatResults[idx];
+    if (!item) return;
+    item.run();
+    closeSearchResults();
+    var input = document.getElementById('globalSearchInput');
+    input.value = '';
+    input.blur();
+  }
+
+  function updateSearchSelection(){
+    document.querySelectorAll('.gsr-item').forEach(function(el, i){
+      el.classList.toggle('is-selected', i === searchSelectedIndex);
+    });
+  }
+
+  function initGlobalSearch(){
+    var input = document.getElementById('globalSearchInput');
+    var wrap = document.getElementById('globalSearchResults');
+    if (!input || !wrap) return;
+
+    input.addEventListener('input', function(){ renderSearchResults(input.value); });
+    input.addEventListener('focus', function(){
+      var menu = document.getElementById('themeMenu');
+      if (menu) menu.hidden = true;
+      if (input.value.trim()) renderSearchResults(input.value);
+    });
+
+    input.addEventListener('keydown', function(e){
+      if (wrap.hidden) return;
+      if (e.key === 'ArrowDown'){
+        e.preventDefault();
+        searchSelectedIndex = Math.min(searchFlatResults.length - 1, searchSelectedIndex + 1);
+        updateSearchSelection();
+      } else if (e.key === 'ArrowUp'){
+        e.preventDefault();
+        searchSelectedIndex = Math.max(0, searchSelectedIndex - 1);
+        updateSearchSelection();
+      } else if (e.key === 'Enter'){
+        e.preventDefault();
+        runSearchResult(searchSelectedIndex > -1 ? searchSelectedIndex : 0);
+      } else if (e.key === 'Escape'){
+        closeSearchResults();
+        input.blur();
+      }
+    });
+
+    wrap.addEventListener('click', function(e){
+      var btn = e.target.closest('.gsr-item');
+      if (!btn) return;
+      runSearchResult(Number(btn.dataset.idx));
+    });
+
+    document.addEventListener('click', function(e){
+      if (!wrap.hidden && !wrap.contains(e.target) && e.target !== input){
+        closeSearchResults();
+      }
+    });
+
+    document.addEventListener('keydown', function(e){
+      if (e.key !== '/') return;
+      var tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      e.preventDefault();
+      input.focus();
+    });
+  }
+
+  /* =================================================================
      PEDIDOS
+     -> Tabla con búsqueda, filtros y selección múltiple. El admin
+        puede crear pedidos a mano (ej. uno telefónico), editarlos por
+        completo o borrarlos (borrar un pedido borra también su chat).
   ================================================================= */
   var ORDERS = [];
   var ordersUnsub = null;
+  var ordersSearchTerm = '';
+  var ordersStatusFilterValue = 'todos';
+  var ordersPayFilterValue = 'todos';
+  var selectedOrderIds = {};
+
+  function shortOrderId(id){ return '#' + id.slice(0, 6).toUpperCase(); }
+
+  function formatOrderDate(ts){
+    if (!ts || typeof ts.toDate !== 'function') return '—';
+    return ts.toDate().toLocaleString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+
+  function getFilteredOrders(){
+    var term = ordersSearchTerm.trim().toLowerCase();
+    return ORDERS.filter(function(o){
+      if (ordersStatusFilterValue !== 'todos' && o.status !== ordersStatusFilterValue) return false;
+      if (ordersPayFilterValue !== 'todos' && o.paymentMethod !== ordersPayFilterValue) return false;
+      if (term){
+        var hay = ((o.customerName||'') + ' ' + (o.phone||'') + ' ' + o._id).toLowerCase();
+        if (hay.indexOf(term) === -1) return false;
+      }
+      return true;
+    });
+  }
 
   function orderRowHTML(order){
     var statusOptions = D.ORDER_STATUSES.map(function(s){
       return '<option value="'+s.value+'"'+(order.status===s.value?' selected':'')+'>'+s.label+'</option>';
     }).join('');
-    var itemsList = (order.items || []).map(function(it){
-      return '<li>'+it.qty+'x '+D.escapeHtml(it.name)+' — '+D.formatPrice(it.price*it.qty)+'</li>';
-    }).join('');
+    var checked = selectedOrderIds[order._id] ? ' checked' : '';
     return (
-      '<div class="order-row status-'+(order.status||'nuevo')+'" data-id="'+order._id+'">' +
-        '<div class="order-row-head">' +
-          '<div><h4>'+D.escapeHtml(order.customerName||'Sin nombre')+'</h4>' +
-            '<span class="order-meta">'+D.escapeHtml(order.phone||'')+' · '+D.timeAgo(order.createdAt)+'</span></div>' +
-          '<span class="order-status-badge">'+D.orderStatusLabel(order.status)+'</span>' +
-        '</div>' +
-        '<ul class="order-items">'+itemsList+'</ul>' +
-        (order.address ? '<div class="order-address">📍 '+D.escapeHtml(order.address)+'</div>' : '') +
-        '<div class="order-row-foot">' +
-          '<span class="order-total">Total: '+D.formatPrice(order.total||0)+'</span>' +
-          '<span class="order-pay">'+(order.paymentMethod==='online' ? 'Pago en línea' : 'Contra entrega')+'</span>' +
-        '</div>' +
-        '<select class="order-status-select" aria-label="Estado del pedido">'+statusOptions+'</select>' +
-      '</div>'
+      '<tr class="status-'+(order.status||'nuevo')+'" data-id="'+order._id+'">' +
+        '<td><input type="checkbox" class="order-check" aria-label="Seleccionar pedido"'+checked+'></td>' +
+        '<td class="t-id">'+shortOrderId(order._id)+'</td>' +
+        '<td class="t-name">'+D.escapeHtml(order.customerName||'Sin nombre')+'</td>' +
+        '<td>'+D.escapeHtml(order.phone||'—')+'</td>' +
+        '<td class="t-total">'+D.formatPrice(order.total||0)+'</td>' +
+        '<td><span class="pay-tag">'+(order.paymentMethod==='online' ? 'En línea' : 'Contra entrega')+'</span></td>' +
+        '<td><select class="status-select status-'+(order.status||'nuevo')+'" aria-label="Estado del pedido">'+statusOptions+'</select></td>' +
+        '<td>'+formatOrderDate(order.createdAt)+'</td>' +
+        '<td class="col-actions"><div class="admin-row-actions" style="display:inline-flex;">' +
+          '<button class="row-edit" type="button" aria-label="Editar pedido"><svg><use href="#icon-pencil"/></svg></button>' +
+          '<button class="row-delete" type="button" aria-label="Eliminar pedido"><svg><use href="#icon-trash"/></svg></button>' +
+        '</div></td>' +
+      '</tr>'
     );
+  }
+
+  function updateOrdersBulkBar(){
+    var ids = Object.keys(selectedOrderIds).filter(function(id){ return selectedOrderIds[id]; });
+    document.getElementById('ordersBulkBar').hidden = ids.length === 0;
+    document.getElementById('ordersBulkCount').textContent = ids.length + (ids.length === 1 ? ' seleccionado' : ' seleccionados');
   }
 
   function renderOrders(){
     var list = document.getElementById('adminOrdersList');
     if (!list) return;
-    list.innerHTML = ORDERS.length
-      ? ORDERS.map(orderRowHTML).join('')
-      : '<p class="admin-empty-note">Aún no han llegado pedidos.</p>';
+    var filtered = getFilteredOrders();
+    list.innerHTML = filtered.map(orderRowHTML).join('');
+
+    var emptyNote = document.getElementById('ordersEmptyNote');
+    emptyNote.hidden = filtered.length > 0;
+    emptyNote.textContent = ORDERS.length ? 'Ningún pedido coincide con la búsqueda.' : 'Aún no han llegado pedidos.';
+
     var badge = document.getElementById('ordersNewBadge');
     var n = ORDERS.filter(function(o){ return o.status === 'nuevo'; }).length;
     badge.textContent = n;
     badge.hidden = n === 0;
+
+    var selectAll = document.getElementById('ordersSelectAll');
+    selectAll.checked = filtered.length > 0 && filtered.every(function(o){ return selectedOrderIds[o._id]; });
+    updateOrdersBulkBar();
   }
 
   function subscribeOrders(){
@@ -154,17 +437,216 @@
   function unsubscribeOrders(){
     if (ordersUnsub){ ordersUnsub(); ordersUnsub = null; }
     ORDERS = [];
+    selectedOrderIds = {};
+  }
+
+  function deleteOrder(id){
+    var db = D.db();
+    db.collection('chats').doc(id).collection('messages').get().then(function(snap){
+      return Promise.all(snap.docs.map(function(d){ return d.ref.delete(); }));
+    }).then(function(){
+      return db.collection('chats').doc(id).delete().catch(function(){});
+    }).then(function(){
+      return db.collection('orders').doc(id).delete();
+    }).catch(function(err){
+      console.error('No se pudo eliminar el pedido:', err);
+      window.alert('No se pudo eliminar el pedido. Intenta de nuevo.');
+    });
   }
 
   function initOrders(){
-    var list = document.getElementById('adminOrdersList');
-    list.addEventListener('change', function(e){
-      var select = e.target.closest('.order-status-select');
-      if (!select) return;
-      var row = select.closest('.order-row');
-      D.db().collection('orders').doc(row.dataset.id).update({ status: select.value }).catch(function(err){
-        console.error('No se pudo actualizar el pedido:', err);
-      });
+    var tbody = document.getElementById('adminOrdersList');
+    var search = document.getElementById('ordersSearch');
+    var statusFilter = document.getElementById('ordersStatusFilter');
+    var payFilter = document.getElementById('ordersPayFilter');
+    var selectAll = document.getElementById('ordersSelectAll');
+    var bulkDeleteBtn = document.getElementById('ordersBulkDelete');
+    var addBtn = document.getElementById('adminAddOrder');
+
+    search.addEventListener('input', function(){ ordersSearchTerm = search.value; renderOrders(); });
+    statusFilter.addEventListener('change', function(){ ordersStatusFilterValue = statusFilter.value; renderOrders(); });
+    payFilter.addEventListener('change', function(){ ordersPayFilterValue = payFilter.value; renderOrders(); });
+
+    selectAll.addEventListener('change', function(){
+      getFilteredOrders().forEach(function(o){ selectedOrderIds[o._id] = selectAll.checked; });
+      renderOrders();
+    });
+
+    tbody.addEventListener('change', function(e){
+      var row = e.target.closest('tr');
+      if (!row) return;
+      var id = row.dataset.id;
+      if (e.target.classList.contains('order-check')){
+        selectedOrderIds[id] = e.target.checked;
+        updateOrdersBulkBar();
+        var filtered = getFilteredOrders();
+        selectAll.checked = filtered.length > 0 && filtered.every(function(o){ return selectedOrderIds[o._id]; });
+        return;
+      }
+      if (e.target.classList.contains('status-select')){
+        D.db().collection('orders').doc(id).update({ status: e.target.value }).catch(function(err){
+          console.error('No se pudo actualizar el pedido:', err);
+        });
+      }
+    });
+
+    tbody.addEventListener('click', function(e){
+      var row = e.target.closest('tr');
+      if (!row) return;
+      var id = row.dataset.id;
+      var order = ORDERS.filter(function(o){ return o._id === id; })[0];
+      if (e.target.closest('.row-edit')){
+        openOrderEditor(order);
+      } else if (e.target.closest('.row-delete')){
+        if (order && window.confirm('¿Eliminar el pedido de "'+(order.customerName||'este cliente')+'"? Esto también borra su chat.')){
+          deleteOrder(id);
+        }
+      }
+    });
+
+    bulkDeleteBtn.addEventListener('click', function(){
+      var ids = Object.keys(selectedOrderIds).filter(function(id){ return selectedOrderIds[id]; });
+      if (!ids.length) return;
+      if (!window.confirm('¿Eliminar ' + ids.length + ' pedido(s) seleccionados? Esto también borra sus chats.')) return;
+      ids.forEach(deleteOrder);
+      selectedOrderIds = {};
+    });
+
+    addBtn.addEventListener('click', function(){ openOrderEditor(null); });
+
+    document.getElementById('orderEditorClose').addEventListener('click', function(){ closeModal(document.getElementById('orderEditorModal')); });
+    document.getElementById('orderEditorCancel').addEventListener('click', function(){ closeModal(document.getElementById('orderEditorModal')); });
+    document.getElementById('orderAddItemRow').addEventListener('click', function(){ addOrderItemRow(null); });
+    document.getElementById('orderEditorForm').addEventListener('submit', saveOrderFromForm);
+    initOrderItemsBuilder();
+  }
+
+  /* ---------- Editor de pedido: lista de productos dinámica ---------- */
+  function orderItemRowHTML(item){
+    item = item || {};
+    var fallback = PRODUCTS[0];
+    var selectedId = item.id != null && getProduct(item.id) ? Number(item.id) : (fallback ? fallback.id : '');
+    var qty = item.qty || 1;
+    var price = item.price != null ? item.price : (getProduct(selectedId) ? getProduct(selectedId).price : 0);
+    var options = PRODUCTS.map(function(p){
+      return '<option value="'+p.id+'"'+(selectedId===p.id?' selected':'')+'>'+D.escapeHtml(p.name)+'</option>';
+    }).join('');
+    return (
+      '<div class="order-item-row">' +
+        '<select class="oi-product">'+options+'</select>' +
+        '<input type="number" class="oi-qty" min="1" value="'+qty+'" aria-label="Cantidad">' +
+        '<input type="number" class="oi-price" min="0" step="100" value="'+price+'" aria-label="Precio unitario">' +
+        '<span class="oi-subtotal">'+D.formatPrice(price*qty)+'</span>' +
+        '<button class="oi-remove" type="button" aria-label="Quitar producto">&times;</button>' +
+      '</div>'
+    );
+  }
+
+  function addOrderItemRow(item){
+    var builder = document.getElementById('orderItemsBuilder');
+    var wrap = document.createElement('div');
+    wrap.innerHTML = orderItemRowHTML(item);
+    builder.appendChild(wrap.firstChild);
+    updateOrderTotal();
+  }
+
+  function updateOrderTotal(){
+    var builder = document.getElementById('orderItemsBuilder');
+    var total = 0;
+    builder.querySelectorAll('.order-item-row').forEach(function(row){
+      var qty = Number(row.querySelector('.oi-qty').value) || 0;
+      var price = Number(row.querySelector('.oi-price').value) || 0;
+      row.querySelector('.oi-subtotal').textContent = D.formatPrice(qty * price);
+      total += qty * price;
+    });
+    document.getElementById('orderTotalDisplay').textContent = D.formatPrice(total);
+  }
+
+  function initOrderItemsBuilder(){
+    var builder = document.getElementById('orderItemsBuilder');
+    builder.addEventListener('change', function(e){
+      if (e.target.classList.contains('oi-product')){
+        var row = e.target.closest('.order-item-row');
+        var p = getProduct(e.target.value);
+        if (p) row.querySelector('.oi-price').value = p.price;
+      }
+      updateOrderTotal();
+    });
+    builder.addEventListener('input', function(e){
+      if (e.target.classList.contains('oi-qty') || e.target.classList.contains('oi-price')) updateOrderTotal();
+    });
+    builder.addEventListener('click', function(e){
+      if (e.target.closest('.oi-remove')){
+        e.target.closest('.order-item-row').remove();
+        updateOrderTotal();
+      }
+    });
+  }
+
+  function openOrderEditor(order){
+    var form = document.getElementById('orderEditorForm');
+    form.reset();
+    document.getElementById('orderId').value = order ? order._id : '';
+    document.getElementById('orderCustomerName').value = order ? (order.customerName || '') : '';
+    document.getElementById('orderPhone').value = order ? (order.phone || '') : '';
+    document.getElementById('orderAddress').value = order ? (order.address || '') : '';
+    document.getElementById('orderPayMethod').value = order ? (order.paymentMethod || 'contra_entrega') : 'contra_entrega';
+    document.getElementById('orderStatus').value = order ? (order.status || 'nuevo') : 'nuevo';
+
+    var builder = document.getElementById('orderItemsBuilder');
+    builder.innerHTML = '';
+    if (order && order.items && order.items.length){
+      order.items.forEach(function(it){ addOrderItemRow(it); });
+    } else {
+      addOrderItemRow(null);
+    }
+    updateOrderTotal();
+
+    document.getElementById('orderEditorTitle').textContent = order ? 'Editar pedido' : 'Nuevo pedido';
+    openModal(document.getElementById('orderEditorModal'));
+  }
+
+  function saveOrderFromForm(e){
+    e.preventDefault();
+    var id = document.getElementById('orderId').value;
+    var name = document.getElementById('orderCustomerName').value.trim();
+    var phone = document.getElementById('orderPhone').value.trim();
+    if (!name || !phone) return;
+
+    var items = [];
+    document.querySelectorAll('#orderItemsBuilder .order-item-row').forEach(function(row){
+      var pid = Number(row.querySelector('.oi-product').value);
+      var qty = Number(row.querySelector('.oi-qty').value) || 0;
+      var price = Number(row.querySelector('.oi-price').value) || 0;
+      var p = getProduct(pid);
+      if (qty > 0 && p) items.push({ id: pid, name: p.name, price: price, qty: qty });
+    });
+    if (!items.length){
+      window.alert('Agrega al menos un producto al pedido.');
+      return;
+    }
+    var total = items.reduce(function(s, it){ return s + it.price * it.qty; }, 0);
+
+    var data = {
+      customerName: name,
+      phone: phone,
+      address: document.getElementById('orderAddress').value.trim(),
+      paymentMethod: document.getElementById('orderPayMethod').value,
+      status: document.getElementById('orderStatus').value,
+      items: items,
+      total: total
+    };
+
+    var db = D.db();
+    var promise = id
+      ? db.collection('orders').doc(id).update(data)
+      : db.collection('orders').add(Object.assign({}, data, { createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
+
+    promise.then(function(){
+      closeModal(document.getElementById('orderEditorModal'));
+    }).catch(function(err){
+      console.error('No se pudo guardar el pedido:', err);
+      window.alert('No se pudo guardar el pedido. Intenta de nuevo.');
     });
   }
 
@@ -336,7 +818,7 @@
     }
   }
 
-  /* ---------- Modal del editor de producto ---------- */
+  /* ---------- Modales (editor de producto y de pedido, comparten overlay) ---------- */
   function openModal(el){
     document.getElementById('uiOverlay').classList.add('is-open');
     el.classList.add('is-open');
@@ -347,12 +829,13 @@
     el.classList.remove('is-open');
     el.setAttribute('aria-hidden', 'true');
   }
+  function closeAnyModal(){
+    document.querySelectorAll('.ui-modal.is-open').forEach(closeModal);
+  }
   function initModal(){
-    var overlay = document.getElementById('uiOverlay');
-    var modal = document.getElementById('productEditorModal');
-    overlay.addEventListener('click', function(){ closeModal(modal); });
+    document.getElementById('uiOverlay').addEventListener('click', closeAnyModal);
     document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape') closeModal(modal);
+      if (e.key === 'Escape') closeAnyModal();
     });
   }
 
@@ -561,10 +1044,30 @@
     }, { merge: true });
   }
 
+  function deleteChat(chatId){
+    var db = D.db();
+    db.collection('chats').doc(chatId).collection('messages').get().then(function(snap){
+      return Promise.all(snap.docs.map(function(d){ return d.ref.delete(); }));
+    }).then(function(){
+      return db.collection('chats').doc(chatId).delete();
+    }).then(function(){
+      if (activeChatId === chatId){
+        activeChatId = null;
+        if (activeChatMsgUnsub){ activeChatMsgUnsub(); activeChatMsgUnsub = null; }
+        document.getElementById('chatsActiveState').hidden = true;
+        document.getElementById('chatsEmptyState').hidden = false;
+      }
+    }).catch(function(err){
+      console.error('No se pudo eliminar el chat:', err);
+      window.alert('No se pudo eliminar la conversación. Intenta de nuevo.');
+    });
+  }
+
   function initChats(){
     var list = document.getElementById('chatsList');
     var form = document.getElementById('adminChatForm');
     var input = document.getElementById('adminChatInput');
+    var deleteBtn = document.getElementById('chatsDeleteBtn');
     list.addEventListener('click', function(e){
       var row = e.target.closest('.chat-list-row');
       if (!row) return;
@@ -575,6 +1078,10 @@
       sendAdminMessage(input.value);
       input.value = '';
     });
+    deleteBtn.addEventListener('click', function(){
+      if (!activeChatId) return;
+      if (window.confirm('¿Eliminar esta conversación? Esto no borra el pedido asociado.')) deleteChat(activeChatId);
+    });
   }
 
   /* =================================================================
@@ -583,6 +1090,8 @@
   document.addEventListener('DOMContentLoaded', function(){
     initAuth();
     initNav();
+    initTheme();
+    initGlobalSearch();
     initOrders();
     initProducts();
     initModal();

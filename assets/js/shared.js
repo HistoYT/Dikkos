@@ -17,18 +17,12 @@
      img: ruta o URL a una foto del producto. emoji: se usa si no hay
      foto. price: número entero en pesos colombianos (sin puntos ni $). */
   var DEFAULT_PRODUCTS = [
-    { id:1,  cat:'tradicionales', name:'Empanada de Carne',     desc:'La clásica: carne de res sazonada a fuego lento.',            price:3500,  img:'assets/img/catalog/food-tray.jpg',    badge:'Popular', badgeType:'gold' },
-    { id:2,  cat:'tradicionales', name:'Empanada de Pollo',     desc:'Pollo desmechado con el toque Dikkos.',                        price:3500,  img:'assets/img/catalog/food-closeup.jpg' },
-    { id:3,  cat:'tradicionales', name:'Empanada Mixta',        desc:'Carne y pollo juntos en una sola mordida.',                    price:4000,  img:'assets/img/catalog/food-tray.jpg' },
-    { id:4,  cat:'tradicionales', name:'Empanada de Queso',     desc:'Queso derretido, sencilla y deliciosa.',                       price:3500,  img:'assets/img/catalog/food-closeup.jpg' },
-    { id:5,  cat:'especiales',    name:'Empanada Especial Dikkos', desc:'Nuestra receta secreta de la casa. Algo único.',            price:4500,  img:'assets/img/catalog/food-tray.jpg',    badge:'Estrella', badgeType:'red' },
-    { id:6,  cat:'especiales',    name:'Empanada Hawaiana',     desc:'Piña y queso: dulce y salada a la vez.',                       price:4000,  img:'assets/img/catalog/food-closeup.jpg', badge:'Nueva', badgeType:'gold' },
-    { id:7,  cat:'especiales',    name:'Empanada BBQ',          desc:'Carne desmechada bañada en salsa BBQ de la casa.',             price:4500,  img:'assets/img/catalog/food-tray.jpg' },
-    { id:8,  cat:'combos',        name:'Combo Fut x6',          desc:'6 empanadas surtidas, ideales para ver el partido.',           price:19000, img:'assets/img/catalog/food-closeup.jpg', badge:'Popular', badgeType:'gold' },
-    { id:9,  cat:'combos',        name:'Combo Dikkos x12',      desc:'12 empanadas surtidas + salsa de la casa.',                    price:36000, img:'assets/img/catalog/food-tray.jpg' },
-    { id:10, cat:'combos',        name:'Combo Pareja',          desc:'4 empanadas + 2 bebidas bien frías.',                          price:17000, img:'assets/img/catalog/food-closeup.jpg' },
-    { id:11, cat:'bebidas',       name:'Limonada de Coco',      desc:'Refrescante, cremosa y bien fría.',                            price:5000,  emoji:'🥥' },
-    { id:12, cat:'bebidas',       name:'Gaseosa',               desc:'Bien fría para acompañar tu pedido.',                          price:2500,  emoji:'🥤' }
+    { id:1, cat:'tradicionales', name:'Empanada de Pollo',         desc:'Pollo desmechado con el toque Dikkos.',                              price:2000, img:'assets/img/catalog/food-closeup.jpg' },
+    { id:2, cat:'tradicionales', name:'Empanada de Carne',         desc:'La clásica: carne de res sazonada a fuego lento.',                   price:2000, img:'assets/img/catalog/food-tray.jpg' },
+    { id:3, cat:'tradicionales', name:'Empanada de Carne Mechada', desc:'Carne mechada deshilachada, cocinada lento hasta quedar bien suave.', price:2000, img:'assets/img/catalog/food-tray.jpg' },
+    { id:4, cat:'tradicionales', name:'Empanada de Queso',         desc:'Queso derretido, sencilla y deliciosa.',                             price:2000, img:'assets/img/catalog/food-closeup.jpg' },
+    { id:5, cat:'bebidas',       name:'Jugo de Mora',              desc:'Jugo natural de mora, refrescante y bien frío.',                     price:2000, emoji:'🫐' },
+    { id:6, cat:'bebidas',       name:'Chicha de Maíz',            desc:'Bebida tradicional de maíz, dulce y refrescante.',                   price:2000, emoji:'🌽' }
   ];
   var PRODUCTS_KEY = 'dikkos_products_v1';
 

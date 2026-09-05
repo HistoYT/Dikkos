@@ -1,0 +1,13 @@
+{
+  "name": "Dikkos Empanadas",
+  "short_name": "Dikkos",
+  "description": "Empanadas recién fritas en Santa Marta. Pide en línea.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#181341",
+  "theme_color": "#181341",
+  "lang": "es",
+  "icons": [
+    { "src": "assets/img/logo.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" }
+  ]
+}

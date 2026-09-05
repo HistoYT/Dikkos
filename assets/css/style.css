@@ -154,6 +154,23 @@ h2.center{ max-width:640px; }
 .scroll-mascot svg{ width:100%; fill:var(--gold-500); stroke:var(--amber-700); stroke-width:1; }
 @media (max-width:900px){ .scroll-mascot{ display:none; } }
 
+/* ---------- Mascota móvil: animación ambiente exclusiva de móvil ----------
+   El seguimiento de scroll de .scroll-mascot recalcula en cada frame de
+   scroll, algo costoso en celulares — por eso se apaga ahí. En su lugar,
+   en móvil se muestra esta versión: una animación CSS pura (sin JS, sin
+   listeners de scroll) que flota suavemente en una esquina fija. */
+.mobile-mascot{
+  display:none; position:fixed; left:16px; bottom:96px; width:40px; z-index:60;
+  pointer-events:none; filter:drop-shadow(0 8px 14px rgba(24,19,65,.4));
+  animation:mobileMascotBob 3.6s ease-in-out infinite;
+}
+.mobile-mascot svg{ width:100%; fill:var(--gold-500); stroke:var(--amber-700); stroke-width:1; }
+@keyframes mobileMascotBob{
+  0%,100%{ transform:translateY(0) rotate(-8deg); }
+  50%{ transform:translateY(-12px) rotate(8deg); }
+}
+@media (max-width:900px){ .mobile-mascot{ display:block; } }
+
 /* ===================================================================
    HEADER
 =================================================================== */
@@ -310,6 +327,33 @@ h2.center{ max-width:640px; }
   position:absolute; top:30px; right:32px; font-family:var(--font-head); font-weight:600;
   font-size:1.1rem; color:rgba(255,215,102,.4);
 }
+
+/* ---------- Carrusel táctil (móvil) ----------
+   En escritorio esta sección se ancla (pin) y el track se desliza con el
+   scroll (ver initProcess en main.js). Ese truco no cabe en móvil: el
+   track completo (4 tarjetas) queda más ancho que la pantalla y, sin el
+   pin, quedaba cortado por "overflow:hidden" — los pasos 2 a 4 nunca se
+   veían. En móvil se reemplaza por un carrusel controlado 100% en
+   JavaScript (arrastre con el dedo vía Pointer Events + GSAP, no scroll
+   nativo): la tarjeta activa queda a tamaño completo y las vecinas se
+   ven más pequeñas y tenues — ese efecto de profundidad se actualiza en
+   cada frame mientras arrastras, no solo al soltar. */
+.process-nav{ display:none; align-items:center; justify-content:center; gap:18px; margin-top:18px; }
+.process-arrow{
+  width:42px; height:42px; border-radius:50%; flex:none;
+  border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.05); color:var(--gold-400);
+  display:flex; align-items:center; justify-content:center; transition:background .25s, transform .15s;
+}
+.process-arrow svg{ fill:none; stroke:currentColor; transform:scaleX(-1); }
+.process-arrow.is-next svg{ transform:scaleX(1); }
+.process-arrow:active{ transform:scale(.9); }
+.process-arrow:disabled{ opacity:.3; }
+.process-dots{ display:flex; justify-content:center; gap:8px; }
+.process-dots span{
+  width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.25);
+  transition:background .3s, transform .3s; flex:none;
+}
+.process-dots span.is-active{ background:var(--gold-500); transform:scale(1.3); }
 
 /* ===================================================================
    CATALOG (mandatory section)
@@ -490,13 +534,13 @@ h2.center{ max-width:640px; }
 /* ===================================================================
    CARRITO (drawer)
 =================================================================== */
-.cart-drawer, .chat-panel{
+.cart-drawer, .chat-panel, .account-drawer{
   position:fixed; top:0; right:0; bottom:0; width:min(92vw,420px); z-index:300;
   background:var(--cream-50); box-shadow:-24px 0 50px -20px rgba(24,19,65,.45);
   display:flex; flex-direction:column;
   transform:translateX(100%); transition:transform .45s var(--ease);
 }
-.cart-drawer.is-open, .chat-panel.is-open{ transform:translateX(0); }
+.cart-drawer.is-open, .chat-panel.is-open, .account-drawer.is-open{ transform:translateX(0); }
 .cart-head{
   display:flex; align-items:center; justify-content:space-between;
   padding:22px 22px 16px; border-bottom:1px solid rgba(24,19,65,.1); flex:none;
@@ -532,7 +576,9 @@ h2.center{ max-width:640px; }
 .cart-clear{ background:none; border:none; color:var(--cocoa-600); font-size:.8rem; text-decoration:underline; text-underline-offset:3px; align-self:center; }
 .cart-clear:hover{ color:var(--red-500); }
 .cart-foot .field{ margin-bottom:12px; }
-.cart-order-error{ background:rgba(228,87,46,.1); color:var(--red-500); border-radius:var(--radius-sm); padding:.6em .9em; font-size:.8rem; }
+.form-error{ background:rgba(228,87,46,.1); color:var(--red-500); border-radius:var(--radius-sm); padding:.7em 1em; font-size:.84rem; margin-bottom:14px; }
+.setup-notice{ background:rgba(224,147,44,.12); color:var(--amber-800); border-radius:var(--radius-sm); padding:.8em 1em; font-size:.82rem; margin-bottom:16px; text-align:left; }
+.setup-notice code{ background:rgba(24,19,65,.08); border-radius:4px; padding:.1em .4em; font-size:.92em; }
 
 .cart-success{ display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; padding:6px 4px 4px; }
 .cart-success svg{ stroke:#3f9142; fill:none; }
@@ -593,6 +639,20 @@ h2.center{ max-width:640px; }
 .chat-send svg{ width:16px; height:16px; fill:none; stroke:currentColor; }
 
 /* ===================================================================
+   MI CUENTA (login de clientes)
+=================================================================== */
+.account-body{ flex:1; overflow-y:auto; padding:20px 22px 26px; }
+.account-auth-tabs{ margin-bottom:18px; }
+.account-auth-hint{ font-size:.78rem; color:var(--cocoa-600); text-align:center; margin-top:14px; }
+.account-email{ font-family:var(--font-head); font-weight:600; color:var(--navy-900); margin-bottom:14px; word-break:break-all; }
+.account-section-title{ font-family:var(--font-head); font-size:.9rem; margin:24px 0 10px; color:var(--navy-900); }
+.account-chats-list{ display:flex; flex-direction:column; gap:10px; }
+.account-chat-row{ display:block; width:100%; text-align:left; background:var(--white); border:1px solid rgba(24,19,65,.08); border-radius:var(--radius-sm); padding:10px 14px; }
+.account-chat-row:hover{ background:var(--gold-300); }
+.account-chat-row h5{ margin:0; font-size:.86rem; font-family:var(--font-head); color:var(--navy-900); }
+.account-chat-row span{ font-size:.76rem; color:var(--cocoa-600); }
+
+/* ===================================================================
    RESPONSIVE
 =================================================================== */
 @media (max-width:1024px){
@@ -600,6 +660,20 @@ h2.center{ max-width:640px; }
   .about-media{ max-width:420px; margin:0 auto; }
   .contact-grid{ grid-template-columns:1fr; }
   .gallery-grid{ grid-template-columns:repeat(3,1fr); grid-auto-rows:180px; }
+}
+
+@media (max-width:900px){
+  /* mismo punto de corte que el gsap.matchMedia de initProcess() en
+     main.js — por encima de 900px el pin de escritorio toma el control.
+     El arrastre lo maneja JS (Pointer Events + GSAP), así que aquí solo
+     se prepara el terreno: se recorta con overflow:hidden (como en
+     escritorio) y touch-action:pan-y deja que el scroll vertical de la
+     página siga funcionando normal mientras el gesto horizontal lo
+     captura el carrusel. */
+  .process-pin{ touch-action:pan-y; }
+  .process-track{ padding:0 24px 20px; touch-action:pan-y; will-change:transform; }
+  .process-step{ will-change:transform, opacity; }
+  .process-nav{ display:flex; }
 }
 
 @media (max-width:820px){

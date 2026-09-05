@@ -15,6 +15,8 @@
   ================================================================= */
   var PRODUCTS = D.loadProducts();
   var currentFilter = 'todas';
+  var CATEGORY_LABELS = { tradicionales:'Tradicionales', especiales:'Especiales', combos:'Combos', bebidas:'Bebidas' };
+  var CATEGORY_ORDER = ['tradicionales', 'especiales', 'combos', 'bebidas'];
 
   function getProduct(id){
     id = Number(id);
@@ -55,7 +57,23 @@
     );
   }
 
+  // Genera los botones de filtro a partir de las categorías que
+  // realmente tengan productos en este momento, para que nunca quede
+  // un filtro mostrando una sección vacía cuando cambie el menú.
+  function renderCatalogFilters(){
+    var wrap = document.getElementById('catalogFilters');
+    if (!wrap) return;
+    var cats = [];
+    PRODUCTS.forEach(function(p){ if (cats.indexOf(p.cat) === -1) cats.push(p.cat); });
+    cats.sort(function(a, b){ return CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b); });
+    wrap.innerHTML = '<button class="filter-btn is-active" data-filter="todas">Todas</button>' +
+      cats.map(function(c){
+        return '<button class="filter-btn" data-filter="'+c+'">'+(CATEGORY_LABELS[c] || c)+'</button>';
+      }).join('');
+  }
+
   function initCatalog(){
+    renderCatalogFilters();
     renderCatalog('todas');
     var filters = document.getElementById('catalogFilters');
     var grid = document.getElementById('catalogGrid');
@@ -91,6 +109,7 @@
   var CART = [];
   var checkoutPayMethod = 'contra_entrega';
   var PAYMENT_LINK = ''; // Pega aquí tu link de pago (Wompi, ePayco, PayU, Mercado Pago...) cuando lo tengas.
+  var customerUser = null; // usuario logueado (ver sección MI CUENTA más abajo)
 
   function loadCart(){
     try {
@@ -102,6 +121,12 @@
 
   function saveCart(){
     localStorage.setItem(CART_KEY, JSON.stringify(CART));
+    if (customerUser && D.firebaseReady()){
+      D.db().collection('carts').doc(customerUser.uid).set({
+        items: CART,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(err){ console.error('No se pudo guardar el carrito en la nube:', err); });
+    }
   }
 
   function cartCount(){
@@ -236,7 +261,7 @@
     var method = checkoutPayMethod;
 
     btn.disabled = true;
-    D.db().collection('orders').add({
+    var orderData = {
       items: itemsSnapshot,
       total: total,
       customerName: name,
@@ -245,7 +270,10 @@
       paymentMethod: method,
       status: 'nuevo',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(function(docRef){
+    };
+    if (customerUser) orderData.customerUid = customerUser.uid;
+
+    D.db().collection('orders').add(orderData).then(function(docRef){
       if (method === 'online' && PAYMENT_LINK){
         window.open(PAYMENT_LINK, '_blank', 'noopener');
       }
@@ -334,7 +362,7 @@
 
   function closeAllPanels(){
     document.getElementById('uiOverlay').classList.remove('is-open');
-    document.querySelectorAll('.cart-drawer.is-open, .chat-panel.is-open').forEach(function(el){
+    document.querySelectorAll('.cart-drawer.is-open, .chat-panel.is-open, .account-drawer.is-open').forEach(function(el){
       el.classList.remove('is-open');
       el.setAttribute('aria-hidden', 'true');
     });
@@ -419,14 +447,27 @@
     chatCustomerName = name;
     try { localStorage.setItem(CHAT_ORDER_KEY, orderId); } catch(e){}
     document.getElementById('chatFloat').hidden = false;
-    D.db().collection('chats').doc(orderId).set({
+    var chatData = {
       customerName: name,
       lastMessage: '',
       lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
       unreadForAdmin: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true }).catch(function(err){ console.error('No se pudo crear el chat:', err); });
+    };
+    if (customerUser) chatData.customerUid = customerUser.uid;
+    D.db().collection('chats').doc(orderId).set(chatData, { merge:true }).catch(function(err){ console.error('No se pudo crear el chat:', err); });
     subscribeChat(orderId);
+    openChatPanel();
+  }
+
+  // Reabre una conversación anterior desde "Mis chats" (Mi cuenta).
+  function openExistingChat(orderId, name){
+    chatOrderId = orderId;
+    chatCustomerName = name || (customerUser ? customerUser.email : '');
+    try { localStorage.setItem(CHAT_ORDER_KEY, orderId); } catch(e){}
+    document.getElementById('chatFloat').hidden = false;
+    subscribeChat(orderId);
+    closeAllPanels();
     openChatPanel();
   }
 
@@ -474,6 +515,171 @@
           subscribeChat(savedId);
         }
       } catch(e){}
+    }
+  }
+
+  /* =================================================================
+     MI CUENTA (login de clientes)
+     -> Cuenta real de Firebase Authentication, distinta de la del
+        panel administrador (esta NO aparece en la lista de correos
+        admin de firestore.rules, así que solo puede ver/editar sus
+        propios datos: su carrito y sus propios chats).
+     -> Al iniciar sesión, el carrito local se combina con el que ya
+        tuviera guardado en la nube (si entró desde otro dispositivo),
+        y sus conversaciones aparecen en "Mis chats" sin importar
+        desde dónde las haya empezado.
+  ================================================================= */
+  var accountMode = 'login';
+  var myChatsUnsub = null;
+
+  function mergeCarts(localCart, remoteCart){
+    var merged = localCart.map(function(i){ return { id:i.id, qty:i.qty }; });
+    remoteCart.forEach(function(r){
+      var existing = merged.filter(function(i){ return i.id === r.id; })[0];
+      if (existing) existing.qty += r.qty;
+      else merged.push({ id:r.id, qty:r.qty });
+    });
+    return merged;
+  }
+
+  function syncCartOnLogin(uid){
+    D.db().collection('carts').doc(uid).get().then(function(doc){
+      var remote = (doc.exists && Array.isArray(doc.data().items)) ? doc.data().items : [];
+      CART = mergeCarts(CART, remote);
+      saveCart();
+      renderCart();
+    }).catch(function(err){ console.error('No se pudo sincronizar el carrito:', err); });
+  }
+
+  function accountChatRowHTML(chat){
+    var time = chat.lastMessageAt ? D.timeAgo(chat.lastMessageAt) : '';
+    return (
+      '<button type="button" class="account-chat-row" data-id="'+chat._id+'">' +
+        '<h5>'+(chat.lastMessage ? D.escapeHtml(chat.lastMessage) : 'Sin mensajes aún')+'</h5>' +
+        '<span>'+time+'</span>' +
+      '</button>'
+    );
+  }
+
+  function renderMyChats(list){
+    var box = document.getElementById('accountChatsList');
+    if (!box) return;
+    box.innerHTML = list.length
+      ? list.map(accountChatRowHTML).join('')
+      : '<p class="chat-empty-note">Aún no tienes conversaciones.</p>';
+  }
+
+  function subscribeMyChats(uid){
+    if (myChatsUnsub) myChatsUnsub();
+    myChatsUnsub = D.db().collection('chats')
+      .where('customerUid', '==', uid)
+      .orderBy('lastMessageAt', 'desc')
+      .onSnapshot(function(snap){
+        var list = snap.docs.map(function(d){ var x = d.data(); x._id = d.id; return x; });
+        renderMyChats(list);
+      }, function(err){
+        console.error('No se pudieron cargar tus chats:', err);
+        renderMyChats([]);
+      });
+  }
+
+  function unsubscribeMyChats(){
+    if (myChatsUnsub){ myChatsUnsub(); myChatsUnsub = null; }
+  }
+
+  function showAccountAuthView(){
+    document.getElementById('accountAuthView').hidden = false;
+    document.getElementById('accountProfileView').hidden = true;
+  }
+
+  function showAccountProfileView(user){
+    document.getElementById('accountAuthView').hidden = true;
+    document.getElementById('accountProfileView').hidden = false;
+    document.getElementById('accountEmailDisplay').textContent = user.email;
+  }
+
+  function setAccountMode(mode){
+    accountMode = mode;
+    document.querySelectorAll('#accountAuthTabs .pay-option').forEach(function(b){
+      b.classList.toggle('is-active', b.dataset.mode === mode);
+    });
+    document.getElementById('accountSubmitBtn').textContent = mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión';
+    document.getElementById('accountAuthError').hidden = true;
+  }
+
+  function initAccount(){
+    var accountBtn = document.getElementById('accountBtn');
+    var closeBtn = document.getElementById('accountClose');
+    var tabs = document.getElementById('accountAuthTabs');
+    var form = document.getElementById('accountAuthForm');
+    var errEl = document.getElementById('accountAuthError');
+    var notice = document.getElementById('accountFirebaseNotice');
+    var logoutBtn = document.getElementById('accountLogout');
+    var chatsList = document.getElementById('accountChatsList');
+
+    if (!accountBtn) return;
+
+    accountBtn.addEventListener('click', function(){
+      if (!D.firebaseReady()){
+        notice.hidden = false;
+        form.hidden = true;
+      }
+      openPanel(document.getElementById('accountDrawer'));
+    });
+    if (closeBtn) closeBtn.addEventListener('click', closeAllPanels);
+
+    if (tabs){
+      tabs.addEventListener('click', function(e){
+        var btn = e.target.closest('.pay-option');
+        if (!btn) return;
+        setAccountMode(btn.dataset.mode);
+      });
+    }
+
+    if (form){
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if (!D.firebaseReady()) return;
+        var email = document.getElementById('accountEmail').value.trim();
+        var pass = document.getElementById('accountPass').value;
+        errEl.hidden = true;
+        var action = accountMode === 'signup'
+          ? D.auth().createUserWithEmailAndPassword(email, pass)
+          : D.auth().signInWithEmailAndPassword(email, pass);
+        action.then(function(){
+          form.reset();
+        }).catch(function(err){
+          errEl.textContent = accountMode === 'signup'
+            ? (err.code === 'auth/email-already-in-use' ? 'Ese correo ya tiene una cuenta. Inicia sesión.' : 'No pudimos crear tu cuenta. Revisa el correo y la contraseña (mínimo 6 caracteres).')
+            : 'Correo o contraseña incorrectos.';
+          errEl.hidden = false;
+        });
+      });
+    }
+
+    if (logoutBtn) logoutBtn.addEventListener('click', function(){ D.auth().signOut(); });
+
+    if (chatsList){
+      chatsList.addEventListener('click', function(e){
+        var row = e.target.closest('.account-chat-row');
+        if (!row) return;
+        openExistingChat(row.dataset.id, customerUser ? customerUser.email : '');
+      });
+    }
+
+    if (D.firebaseReady()){
+      D.auth().onAuthStateChanged(function(user){
+        customerUser = user;
+        if (user){
+          showAccountProfileView(user);
+          syncCartOnLogin(user.uid);
+          subscribeMyChats(user.uid);
+        } else {
+          showAccountAuthView();
+          setAccountMode('login');
+          unsubscribeMyChats();
+        }
+      });
     }
   }
 
@@ -648,6 +854,116 @@
       });
       return function(){ tween.kill(); };
     });
+
+    // Móvil: carrusel 100% controlado en JavaScript (nada de scroll nativo).
+    // El dedo mueve el track 1:1 vía Pointer Events; al soltar, GSAP anima
+    // el snap a la tarjeta más cercana. La tarjeta activa se ve a tamaño
+    // completo y las vecinas más chicas y tenues — ese efecto de
+    // profundidad se recalcula en cada frame, tanto arrastrando como
+    // durante la animación de snap, para que el movimiento se sienta
+    // fluido y no solo "salte" al final.
+    mm.add('(max-width: 900px)', function(){
+      var pin = document.querySelector('.process-pin');
+      var track = document.getElementById('processTrack');
+      var steps = document.querySelectorAll('.process-step');
+      var dotsWrap = document.getElementById('processDots');
+      var prevBtn = document.getElementById('processPrev');
+      var nextBtn = document.getElementById('processNext');
+      if (!pin || !track || !steps.length || !dotsWrap) return;
+
+      var index = 0;
+      var dragging = false;
+      var startX = 0;
+      var currentX = 0;
+      var trackStartX = 0;
+
+      dotsWrap.innerHTML = Array.prototype.map.call(steps, function(_, i){
+        return '<span'+(i === 0 ? ' class="is-active"' : '')+'></span>';
+      }).join('');
+      var dots = dotsWrap.querySelectorAll('span');
+
+      function targetX(i){
+        var step = steps[i];
+        return pin.clientWidth / 2 - step.offsetWidth / 2 - step.offsetLeft;
+      }
+
+      function updateDepth(){
+        var trackX = Number(gsap.getProperty(track, 'x')) || 0;
+        var center = pin.clientWidth / 2 - trackX;
+        steps.forEach(function(step){
+          var mid = step.offsetLeft + step.offsetWidth / 2;
+          var norm = Math.min(1, Math.abs(mid - center) / (step.offsetWidth * 0.9));
+          gsap.set(step, { scale: 1 - norm * 0.08, opacity: 1 - norm * 0.5 });
+        });
+      }
+
+      function updateUI(){
+        dots.forEach(function(d, i){ d.classList.toggle('is-active', i === index); });
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === steps.length - 1;
+      }
+
+      function goTo(i, animate){
+        index = Math.max(0, Math.min(steps.length - 1, i));
+        gsap.to(track, {
+          x: targetX(index),
+          duration: animate === false ? 0 : .55,
+          ease:'power3.out',
+          onUpdate: updateDepth
+        });
+        updateUI();
+      }
+
+      function onPointerDown(e){
+        dragging = true;
+        startX = e.clientX;
+        currentX = e.clientX; // un toque sin arrastre debe dar delta 0, no un salto fantasma
+        trackStartX = Number(gsap.getProperty(track, 'x')) || 0;
+        gsap.killTweensOf(track);
+        try { track.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      function onPointerMove(e){
+        if (!dragging) return;
+        currentX = e.clientX;
+        gsap.set(track, { x: trackStartX + (currentX - startX) });
+        updateDepth();
+      }
+      function onPointerUp(){
+        if (!dragging) return;
+        dragging = false;
+        var delta = currentX - startX;
+        if (Math.abs(delta) > 40) goTo(index + (delta < 0 ? 1 : -1));
+        else goTo(index);
+        startX = 0; currentX = 0;
+      }
+
+      track.addEventListener('pointerdown', onPointerDown);
+      track.addEventListener('pointermove', onPointerMove);
+      track.addEventListener('pointerup', onPointerUp);
+      track.addEventListener('pointercancel', onPointerUp);
+      prevBtn.addEventListener('click', function(){ goTo(index - 1); });
+      nextBtn.addEventListener('click', function(){ goTo(index + 1); });
+      dotsWrap.addEventListener('click', function(e){
+        var i = Array.prototype.indexOf.call(dots, e.target);
+        if (i > -1) goTo(i);
+      });
+
+      function onResize(){ goTo(index, false); }
+      window.addEventListener('resize', onResize);
+
+      goTo(0, false);
+
+      return function(){
+        track.removeEventListener('pointerdown', onPointerDown);
+        track.removeEventListener('pointermove', onPointerMove);
+        track.removeEventListener('pointerup', onPointerUp);
+        track.removeEventListener('pointercancel', onPointerUp);
+        window.removeEventListener('resize', onResize);
+        gsap.killTweensOf(track);
+        gsap.set(track, { clearProps:'transform' });
+        gsap.set(steps, { clearProps:'transform,opacity' });
+      };
+    });
   }
 
   /* =================================================================
@@ -780,6 +1096,7 @@
     initCart();
     initPanels();
     initChat();
+    initAccount();
     initHeader();
     initAnchors();
     initLightbox();

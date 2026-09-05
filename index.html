@@ -5,15 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Dikkos Empanadas — Algo único, algo diferente | Santa Marta</title>
 <meta name="description" content="Dikkos: las empanadas más crocantes de Santa Marta. Masa artesanal, relleno generoso y un sabor que no vas a encontrar en ningún otro lado. Pide en línea.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Dikkos Empanadas">
+<link rel="canonical" href="https://dikkos-empanadas.web.app/">
+
 <meta property="og:title" content="Dikkos Empanadas — Algo único, algo diferente">
 <meta property="og:description" content="Las empanadas más crocantes de Santa Marta. Recién fritas, con relleno de autor. Pide ya en línea.">
-<meta property="og:image" content="assets/img/logo.jpg">
+<meta property="og:image" content="https://dikkos-empanadas.web.app/assets/img/logo.jpg">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://dikkos-empanadas.web.app/">
+<meta property="og:site_name" content="Dikkos Empanadas">
+<meta property="og:locale" content="es_CO">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dikkos Empanadas — Algo único, algo diferente">
+<meta name="twitter:description" content="Las empanadas más crocantes de Santa Marta. Recién fritas, con relleno de autor. Pide ya en línea.">
+<meta name="twitter:image" content="https://dikkos-empanadas.web.app/assets/img/logo.jpg">
+
+<meta name="theme-color" content="#181341">
 <link rel="icon" href="assets/img/logo.jpg">
+<link rel="apple-touch-icon" href="assets/img/logo.jpg">
+<link rel="manifest" href="manifest.json">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Dikkos Empanadas",
+  "image": "https://dikkos-empanadas.web.app/assets/img/logo.jpg",
+  "url": "https://dikkos-empanadas.web.app/",
+  "telephone": "+573015729100",
+  "priceRange": "$",
+  "servesCuisine": "Colombiana",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Santa Marta",
+    "addressRegion": "Magdalena",
+    "addressCountry": "CO"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+      "opens": "18:00",
+      "closes": "22:00"
+    }
+  ],
+  "menu": "https://dikkos-empanadas.web.app/#menu",
+  "sameAs": ["https://www.instagram.com/dikkos_sm/"]
+}
+</script>
 </head>
 <body>
 
@@ -91,6 +137,10 @@
   <symbol id="icon-chat" viewBox="0 0 24 24">
     <path d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H9l-4.4 3.3a.6.6 0 0 1-.96-.48V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
   </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M4.5 20c1-3.8 4.2-6 7.5-6s6.5 2.2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
 </svg>
 
 <!-- ============ PRELOADER ============ -->
@@ -104,8 +154,13 @@
   </div>
 </div>
 
-<!-- ============ SCROLL MASCOT (rolling empanada) ============ -->
+<!-- ============ SCROLL MASCOT (rolling empanada) — solo escritorio ============ -->
 <div class="scroll-mascot" id="scrollMascot" aria-hidden="true">
+  <svg viewBox="0 0 100 56"><use href="#icon-empanada"/></svg>
+</div>
+
+<!-- ============ MASCOTA MÓVIL — animación ambiente exclusiva de móvil ============ -->
+<div class="mobile-mascot" aria-hidden="true">
   <svg viewBox="0 0 100 56"><use href="#icon-empanada"/></svg>
 </div>
 
@@ -127,6 +182,9 @@
       </a>
     </nav>
     <div class="header-actions">
+      <button class="icon-btn account-btn" id="accountBtn" aria-label="Mi cuenta" aria-haspopup="dialog">
+        <svg><use href="#icon-user"/></svg>
+      </button>
       <button class="icon-btn cart-btn" id="cartBtn" aria-label="Ver carrito de compras" aria-haspopup="dialog">
         <svg><use href="#icon-cart"/></svg>
         <span class="cart-count" id="cartCount">0</span>
@@ -200,8 +258,8 @@
 
         <div class="stat-row">
           <div class="stat reveal">
-            <span class="stat-num" data-count="8">0</span><span class="stat-suffix">+</span>
-            <span class="stat-label">sabores en el menú</span>
+            <span class="stat-num" data-count="4">0</span>
+            <span class="stat-label">sabores de empanada</span>
           </div>
           <div class="stat reveal">
             <span class="stat-num" data-count="6">0</span>
@@ -251,6 +309,15 @@
         </article>
       </div>
     </div>
+    <div class="process-nav" id="processNav">
+      <button type="button" class="process-arrow" id="processPrev" aria-label="Paso anterior">
+        <svg class="ic-sm"><use href="#icon-arrow"/></svg>
+      </button>
+      <div class="process-dots" id="processDots"></div>
+      <button type="button" class="process-arrow is-next" id="processNext" aria-label="Paso siguiente">
+        <svg class="ic-sm"><use href="#icon-arrow"/></svg>
+      </button>
+    </div>
   </section>
 
   <!-- ============ CATÁLOGO (sección obligatoria) ============ -->
@@ -261,13 +328,7 @@
       <h2 class="reveal center">Nuestro menú</h2>
       <p class="reveal center section-sub">Elige, antójate y arma tu pedido en un solo clic.</p>
 
-      <div class="catalog-filters reveal" id="catalogFilters">
-        <button class="filter-btn is-active" data-filter="todas">Todas</button>
-        <button class="filter-btn" data-filter="tradicionales">Tradicionales</button>
-        <button class="filter-btn" data-filter="especiales">Especiales</button>
-        <button class="filter-btn" data-filter="combos">Combos</button>
-        <button class="filter-btn" data-filter="bebidas">Bebidas</button>
-      </div>
+      <div class="catalog-filters reveal" id="catalogFilters"></div>
 
       <div class="catalog-grid" id="catalogGrid" aria-live="polite"></div>
     </div>
@@ -402,7 +463,7 @@
         </div>
       </div>
 
-      <p class="cart-order-error" id="cartOrderError" hidden></p>
+      <p class="form-error" id="cartOrderError" hidden></p>
 
       <button type="button" class="btn btn-primary btn-block" id="cartCheckout">
         <svg class="ic-sm"><use href="#icon-check"/></svg> Confirmar pedido
@@ -435,6 +496,49 @@
     <input type="text" id="chatInput" placeholder="Escribe un mensaje..." autocomplete="off">
     <button type="submit" class="chat-send" aria-label="Enviar mensaje"><svg><use href="#icon-arrow"/></svg></button>
   </form>
+</aside>
+
+<!-- ============ MI CUENTA (login clientes) ============ -->
+<aside class="account-drawer" id="accountDrawer" role="dialog" aria-modal="true" aria-labelledby="accountTitle" aria-hidden="true">
+  <div class="cart-head">
+    <h3 id="accountTitle"><svg class="ic-sm"><use href="#icon-user"/></svg> Mi cuenta</h3>
+    <button class="drawer-close" id="accountClose" aria-label="Cerrar">&times;</button>
+  </div>
+
+  <div class="account-body">
+    <div class="account-auth" id="accountAuthView">
+      <div class="pay-method account-auth-tabs" id="accountAuthTabs">
+        <button type="button" class="pay-option is-active" data-mode="login">Iniciar sesión</button>
+        <button type="button" class="pay-option" data-mode="signup">Crear cuenta</button>
+      </div>
+
+      <p class="setup-notice" id="accountFirebaseNotice" hidden>
+        Los inicios de sesión aún no están activados. Vuelve a intentarlo más tarde.
+      </p>
+
+      <form id="accountAuthForm" novalidate>
+        <p class="form-error" id="accountAuthError" hidden></p>
+        <div class="field">
+          <label for="accountEmail">Correo</label>
+          <input type="email" id="accountEmail" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="accountPass">Contraseña</label>
+          <input type="password" id="accountPass" autocomplete="current-password" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="accountSubmitBtn">Iniciar sesión</button>
+      </form>
+      <p class="account-auth-hint">Guarda tu carrito y tus chats con nosotros para verlos desde cualquier dispositivo.</p>
+    </div>
+
+    <div class="account-profile" id="accountProfileView" hidden>
+      <p class="account-email" id="accountEmailDisplay"></p>
+      <button type="button" class="btn btn-outline btn-block" id="accountLogout">Cerrar sesión</button>
+
+      <h4 class="account-section-title">Mis chats con Dikkos</h4>
+      <div class="account-chats-list" id="accountChatsList"></div>
+    </div>
+  </div>
 </aside>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>

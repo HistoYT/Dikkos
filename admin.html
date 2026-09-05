@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<script>(function(){ try{ var t=localStorage.getItem('dikkos_admin_theme'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){} })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Panel administrador — Dikkos Empanadas</title>
 <meta name="robots" content="noindex, nofollow">
@@ -44,6 +45,20 @@
     <path d="M6 2.5h12v19l-2.2-1.4-2 1.4-1.8-1.4-1.8 1.4-2-1.4L6 21.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
   </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M20 20l-4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-palette" viewBox="0 0 24 24">
+    <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.9-.87 1.9-1.9 0-.5-.2-.93-.53-1.28-.32-.35-.52-.77-.52-1.27 0-.95.77-1.72 1.72-1.72H16a4 4 0 0 0 4-4c0-4.4-3.6-8-8-8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="7.3" cy="10.6" r="1.15" fill="currentColor" stroke="none"/>
+    <circle cx="9.6" cy="6.8" r="1.15" fill="currentColor" stroke="none"/>
+    <circle cx="14.7" cy="6.8" r="1.15" fill="currentColor" stroke="none"/>
+    <circle cx="16.4" cy="11" r="1.15" fill="currentColor" stroke="none"/>
+  </symbol>
 </svg>
 
 <!-- ============ VISTA DE LOGIN ============ -->
@@ -58,7 +73,7 @@
     </p>
 
     <form id="adminLoginForm" novalidate>
-      <p class="admin-error" id="adminError" hidden>Correo o contraseña incorrectos.</p>
+      <p class="form-error" id="adminError" hidden>Correo o contraseña incorrectos.</p>
       <div class="field">
         <label for="adminUser">Correo</label>
         <input type="email" id="adminUser" autocomplete="username" required>
@@ -96,23 +111,107 @@
     <header class="admin-topbar">
       <button type="button" class="admin-burger" id="adminBurger" aria-label="Menú"><span></span><span></span><span></span></button>
       <h2 id="adminSectionTitle">Pedidos</h2>
+
+      <div class="admin-global-search" id="globalSearch">
+        <div class="admin-global-search-box">
+          <svg class="ic-sm"><use href="#icon-search"/></svg>
+          <input type="text" id="globalSearchInput" placeholder="Buscar en todo el panel..." autocomplete="off">
+          <span class="admin-global-search-kbd" id="globalSearchKbd">/</span>
+        </div>
+        <div class="global-search-results" id="globalSearchResults" hidden></div>
+      </div>
+
+      <div class="admin-theme-switch" id="themeSwitch">
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-haspopup="true" aria-expanded="false" aria-label="Cambiar apariencia del panel">
+          <svg><use href="#icon-palette"/></svg>
+        </button>
+        <div class="theme-menu" id="themeMenu" hidden>
+          <button type="button" class="theme-option" data-theme="light"><span class="theme-swatch theme-swatch-light"></span>Claro</button>
+          <button type="button" class="theme-option" data-theme="dark"><span class="theme-swatch theme-swatch-dark"></span>Oscuro</button>
+          <button type="button" class="theme-option" data-theme="neon"><span class="theme-swatch theme-swatch-neon"></span>Neón fosforescente</button>
+        </div>
+      </div>
     </header>
 
     <!-- ---------- PEDIDOS ---------- -->
     <section class="admin-section is-active" data-section="pedidos" id="sectionPedidos">
-      <div class="admin-section-head"><h2><svg class="ic-md" style="stroke:var(--amber-700)"><use href="#icon-receipt"/></svg> Pedidos</h2></div>
+      <div class="section-topbar">
+        <p class="section-breadcrumb">Panel / Pedidos</p>
+        <div class="section-header-row">
+          <div>
+            <h1>Pedidos</h1>
+            <p class="section-subtitle">Gestiona los pedidos de tu tienda</p>
+          </div>
+          <div class="section-header-actions">
+            <button class="btn btn-primary btn-sm" id="adminAddOrder" type="button"><svg class="ic-sm"><use href="#icon-plus"/></svg> Nuevo pedido</button>
+          </div>
+        </div>
+      </div>
+
       <p class="admin-note" id="ordersFirebaseNotice" hidden>
         Los pedidos necesitan Firebase conectado. Revisa <code>assets/js/firebase-config.js</code>.
       </p>
-      <div class="admin-orders-list" id="adminOrdersList"></div>
+
+      <div class="table-toolbar">
+        <div class="table-search">
+          <svg class="ic-sm"><use href="#icon-search"/></svg>
+          <input type="text" id="ordersSearch" placeholder="Buscar por cliente, teléfono o #ID...">
+        </div>
+        <select id="ordersStatusFilter" class="table-filter">
+          <option value="todos">Todos los estados</option>
+          <option value="nuevo">Nuevo</option>
+          <option value="preparando">En preparación</option>
+          <option value="listo">Listo</option>
+          <option value="entregado">Entregado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <select id="ordersPayFilter" class="table-filter">
+          <option value="todos">Todos los métodos</option>
+          <option value="contra_entrega">Contra entrega</option>
+          <option value="online">En línea</option>
+        </select>
+      </div>
+
+      <div class="bulk-bar" id="ordersBulkBar" hidden>
+        <span id="ordersBulkCount">0 seleccionados</span>
+        <button type="button" class="btn btn-dark btn-sm" id="ordersBulkDelete">Eliminar seleccionados</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="ordersSelectAll" aria-label="Seleccionar todos"></th>
+              <th>#ID</th>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Monto</th>
+              <th>Método</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="adminOrdersList"></tbody>
+        </table>
+        <p class="admin-empty-note" id="ordersEmptyNote" hidden>Aún no han llegado pedidos.</p>
+      </div>
     </section>
 
     <!-- ---------- PRODUCTOS ---------- -->
     <section class="admin-section" data-section="productos" id="sectionProductos">
-      <div class="admin-section-head"><h2>Productos</h2></div>
-      <div class="admin-panel-actions">
-        <button class="btn btn-primary btn-sm" id="adminAddProduct" type="button">+ Nuevo producto</button>
-        <button class="btn btn-outline btn-sm" id="adminRestore" type="button">Restaurar catálogo</button>
+      <div class="section-topbar">
+        <p class="section-breadcrumb">Panel / Productos</p>
+        <div class="section-header-row">
+          <div>
+            <h1>Productos</h1>
+            <p class="section-subtitle">Administra el catálogo de tu tienda</p>
+          </div>
+          <div class="section-header-actions">
+            <button class="btn btn-primary btn-sm" id="adminAddProduct" type="button"><svg class="ic-sm"><use href="#icon-plus"/></svg> Nuevo producto</button>
+            <button class="btn btn-outline btn-sm" id="adminRestore" type="button">Restaurar catálogo</button>
+          </div>
+        </div>
       </div>
       <p class="admin-note">Los productos se guardan solo en este navegador (no dependen de Firebase), así que edítalos desde el mismo equipo/navegador que usas para publicar la página.</p>
       <div class="admin-product-list" id="adminProductList"></div>
@@ -120,7 +219,15 @@
 
     <!-- ---------- FINANZAS ---------- -->
     <section class="admin-section" data-section="finanzas" id="sectionFinanzas">
-      <div class="admin-section-head"><h2>Finanzas</h2></div>
+      <div class="section-topbar">
+        <p class="section-breadcrumb">Panel / Finanzas</p>
+        <div class="section-header-row">
+          <div>
+            <h1>Finanzas</h1>
+            <p class="section-subtitle">Cuánto se ha movido en tu tienda</p>
+          </div>
+        </div>
+      </div>
       <div class="stat-tiles" id="statTiles">
         <div class="stat-tile is-accent"><div class="stat-tile-label">Ingresos totales</div><div class="stat-tile-value" id="statRevenue">$0</div></div>
         <div class="stat-tile"><div class="stat-tile-label">Pedidos</div><div class="stat-tile-value" id="statCount">0</div></div>
@@ -141,13 +248,24 @@
 
     <!-- ---------- CHATS ---------- -->
     <section class="admin-section" data-section="chats" id="sectionChats">
-      <div class="admin-section-head"><h2>Chats</h2></div>
+      <div class="section-topbar">
+        <p class="section-breadcrumb">Panel / Chats</p>
+        <div class="section-header-row">
+          <div>
+            <h1>Chats</h1>
+            <p class="section-subtitle">Conversaciones con tus clientes</p>
+          </div>
+        </div>
+      </div>
       <div class="chats-layout">
         <div class="chats-list" id="chatsList"></div>
         <div class="chats-conversation">
           <div class="chats-conversation-empty" id="chatsEmptyState">Selecciona una conversación de la izquierda.</div>
           <div class="chats-conversation-active" id="chatsActiveState" hidden>
-            <div class="chats-conversation-head"><h3 id="chatCustomerName"></h3></div>
+            <div class="chats-conversation-head">
+              <h3 id="chatCustomerName"></h3>
+              <button type="button" class="chats-delete-btn" id="chatsDeleteBtn" aria-label="Eliminar conversación"><svg><use href="#icon-trash"/></svg></button>
+            </div>
             <div class="chat-messages" id="adminChatMessages"></div>
             <form class="chat-input-row" id="adminChatForm">
               <input type="text" id="adminChatInput" placeholder="Escribe una respuesta..." autocomplete="off">
@@ -225,6 +343,66 @@
       <div class="editor-actions">
         <button type="submit" class="btn btn-primary">Guardar producto</button>
         <button type="button" class="btn btn-outline" id="productEditorCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ EDITOR DE PEDIDO ============ -->
+<div class="ui-modal ui-modal-lg" id="orderEditorModal" role="dialog" aria-modal="true" aria-labelledby="orderEditorTitle" aria-hidden="true">
+  <button class="modal-close" id="orderEditorClose" aria-label="Cerrar">&times;</button>
+  <div class="editor-body">
+    <h3 id="orderEditorTitle">Nuevo pedido</h3>
+    <form id="orderEditorForm" novalidate>
+      <input type="hidden" id="orderId">
+      <div class="field-row">
+        <div class="field">
+          <label for="orderCustomerName">Cliente</label>
+          <input type="text" id="orderCustomerName" required>
+        </div>
+        <div class="field">
+          <label for="orderPhone">Teléfono</label>
+          <input type="text" id="orderPhone" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="orderAddress">Dirección (opcional)</label>
+        <input type="text" id="orderAddress">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="orderPayMethod">Método de pago</label>
+          <select id="orderPayMethod">
+            <option value="contra_entrega">Contra entrega</option>
+            <option value="online">En línea</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="orderStatus">Estado</label>
+          <select id="orderStatus">
+            <option value="nuevo">Nuevo</option>
+            <option value="preparando">En preparación</option>
+            <option value="listo">Listo</option>
+            <option value="entregado">Entregado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Productos del pedido</label>
+        <div class="order-items-builder" id="orderItemsBuilder"></div>
+        <button type="button" class="btn btn-outline btn-sm" id="orderAddItemRow">+ Agregar producto</button>
+      </div>
+
+      <div class="order-total-row">
+        <span>Total</span>
+        <strong id="orderTotalDisplay">$0</strong>
+      </div>
+
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-primary">Guardar pedido</button>
+        <button type="button" class="btn btn-outline" id="orderEditorCancel">Cancelar</button>
       </div>
     </form>
   </div>
