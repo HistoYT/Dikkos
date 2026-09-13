@@ -211,6 +211,14 @@
     count.textContent = n;
     count.classList.toggle('is-visible', n > 0);
     total.textContent = D.formatPrice(cartTotal());
+
+    if (!drawer.classList.contains('is-order-success')){
+      var needsLogin = CART.length > 0 && !customerUser;
+      var loginBox = document.getElementById('cartLoginRequired');
+      var checkoutForm = document.getElementById('cartCheckoutForm');
+      if (loginBox) loginBox.hidden = !needsLogin;
+      if (checkoutForm) checkoutForm.hidden = needsLogin;
+    }
   }
 
   function openCart(){ openPanel(document.getElementById('cartDrawer')); }
@@ -232,6 +240,11 @@
 
   function handleCheckout(){
     if (!CART.length) return;
+    if (!customerUser){
+      closeAllPanels();
+      openPanel(document.getElementById('accountDrawer'));
+      return;
+    }
     var nameEl = document.getElementById('custName');
     var phoneEl = document.getElementById('custPhone');
     var addressEl = document.getElementById('custAddress');
@@ -307,14 +320,26 @@
     var payMethod = document.getElementById('payMethod');
     var successClose = document.getElementById('cartSuccessClose');
     var heroCartBtn = document.getElementById('heroCartBtn');
+    var loginBtn = document.getElementById('cartLoginBtn');
 
     if (cartBtn) cartBtn.addEventListener('click', openCart);
     if (heroCartBtn) heroCartBtn.addEventListener('click', openCart);
+    if (loginBtn) loginBtn.addEventListener('click', function(){
+      closeAllPanels();
+      openPanel(document.getElementById('accountDrawer'));
+    });
     if (closeBtn) closeBtn.addEventListener('click', closeAllPanels);
     if (emptyCta) emptyCta.addEventListener('click', closeAllPanels);
     if (clearBtn) clearBtn.addEventListener('click', clearCart);
     if (checkoutBtn) checkoutBtn.addEventListener('click', handleCheckout);
-    if (successClose) successClose.addEventListener('click', function(){ resetCartSuccess(); closeAllPanels(); });
+    if (successClose) successClose.addEventListener('click', function(){
+      resetCartSuccess();
+      closeAllPanels();
+      if (pendingChatAutoOpen){
+        pendingChatAutoOpen = false;
+        openChatPanel();
+      }
+    });
 
     ['custName', 'custPhone'].forEach(function(id){
       var el = document.getElementById(id);
@@ -389,6 +414,7 @@
   var chatCustomerName = '';
   var chatUnsub = null;
   var chatOpenedAt = 0;
+  var pendingChatAutoOpen = false; // el chat se abre al cerrar la pantalla de "pedido recibido", no encima de ella (comparten la misma posición fija)
 
   function chatMsgHTML(msg){
     var mine = msg.sender === 'customer';
@@ -457,7 +483,10 @@
     if (customerUser) chatData.customerUid = customerUser.uid;
     D.db().collection('chats').doc(orderId).set(chatData, { merge:true }).catch(function(err){ console.error('No se pudo crear el chat:', err); });
     subscribeChat(orderId);
-    openChatPanel();
+    // No abrir el panel de inmediato: el carrito sigue mostrando la
+    // confirmación del pedido en la misma posición fija, y ambos paneles
+    // se encimarían. Se abre solo cuando el cliente cierra esa pantalla.
+    pendingChatAutoOpen = true;
   }
 
   // Reabre una conversación anterior desde "Mis chats" (Mi cuenta).
@@ -616,6 +645,7 @@
     var notice = document.getElementById('accountFirebaseNotice');
     var logoutBtn = document.getElementById('accountLogout');
     var chatsList = document.getElementById('accountChatsList');
+    var googleBtn = document.getElementById('accountGoogleBtn');
 
     if (!accountBtn) return;
 
@@ -623,6 +653,9 @@
       if (!D.firebaseReady()){
         notice.hidden = false;
         form.hidden = true;
+        if (googleBtn) googleBtn.hidden = true;
+        var divider = document.querySelector('.account-divider');
+        if (divider) divider.hidden = true;
       }
       openPanel(document.getElementById('accountDrawer'));
     });
@@ -659,6 +692,19 @@
 
     if (logoutBtn) logoutBtn.addEventListener('click', function(){ D.auth().signOut(); });
 
+    if (googleBtn){
+      googleBtn.addEventListener('click', function(){
+        if (!D.firebaseReady()) return;
+        errEl.hidden = true;
+        var provider = new firebase.auth.GoogleAuthProvider();
+        D.auth().signInWithPopup(provider).catch(function(err){
+          if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+          errEl.textContent = 'No se pudo iniciar sesión con Google. Intenta de nuevo.';
+          errEl.hidden = false;
+        });
+      });
+    }
+
     if (chatsList){
       chatsList.addEventListener('click', function(e){
         var row = e.target.closest('.account-chat-row');
@@ -678,6 +724,7 @@
           showAccountAuthView();
           setAccountMode('login');
           unsubscribeMyChats();
+          renderCart();
         }
       });
     }
